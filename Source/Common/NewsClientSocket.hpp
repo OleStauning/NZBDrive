@@ -158,16 +158,6 @@ public:
 	~NewsClientSocket()
 	{
 //		close(); // for some reason, after hibernate, "close" caused:
-	
-//Warning: system  : Connection reset by peer (system:104)
-//Warning: OnErrorRetry: segment 0 <part1of1.86f8SwrfeZlecN1SxGXC@camelsystem-powerpost.local>
-// ..................	
-// Debug: Client (1,0,0): Client restarting
-// terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::system::system_error> >'
-//  what():  shutdown: Transport endpoint is not connected
-//Aborted (core dumped)
-
-	
 	}
 
 	bool IsSSL() const { return m_ssl; } 

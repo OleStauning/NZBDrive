@@ -632,49 +632,6 @@ namespace ByteFountain
 		}
 	}
 
-/*******************************************************	
-Info: FINISHED: alt.binaries.sounds.rar.mp3
-Info: HORIZON FILTER COUNT=0
-Info: Work completed
-Info: NewsClientCache Stopping.
-Debug: Client (1,0,0): Client stopped
-Debug: Client (2,0,0): Client stopped
-Debug: Client (3,0,0): Client stopped
-Debug: Client (4,0,0): Client stopped
-Info: All connections closed.
-Info: NewsClientCache Stopped.
-==7583== Thread 2:
-==7583== Invalid read of size 4
-==7583==    at 0x4E44A91: pthread_once (pthread_once.S:111)
-==7583==    by 0x45CE02: __gthread_once(int*, void (*)()) (gthr-default.h:699)
-==7583==    by 0x46A758: void std::call_once<void (std::__future_base::_State_base::*)(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>&, bool&), std::__future_base::_State_base* const, std::reference_wrapper<std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()> >, std::reference_wrapper<bool> >(std::once_flag&, void (std::__future_base::_State_base::*&&)(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>&, bool&), std::__future_base::_State_base* const&&, std::reference_wrapper<std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()> >&&, std::reference_wrapper<bool>&&) (mutex:786)
-==7583==    by 0x467D84: std::__future_base::_State_base::_M_set_result(std::function<std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>, bool) (future:358)
-==7583==    by 0x46CEA9: std::promise<bool>::set_value(bool&&) (future:994)
-==7583==    by 0x45F460: ByteFountain::NewsClientCache::Stop()::{lambda()#1}::operator()()::{lambda(std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&)#1}::operator()(std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const) const (NewsClientCache.cpp:494)
-==7583==    by 0x4624C5: std::_Function_handler<void (std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&), ByteFountain::NewsClientCache::Stop()::{lambda()#1}::operator()()::{lambda(std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&)#1}>::_M_invoke(std::_Any_data const&, std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&) (functional:2071)
-==7583==    by 0x46ADF2: std::function<void (std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&)>::operator()(std::shared_ptr<ByteFountain::NewsClientCache::MyClient> const&) const (functional:2464)
-==7583==    by 0x4687A5: ByteFountain::NewsClientCache::MyClient::OnStopped() (NewsClientCache.cpp:74)
-==7583==    by 0x448637: ByteFountain::NewsClient::Disconnect() (in /home/stauning/ByteFountain)
-==7583==    by 0x45F9F5: ByteFountain::NewsClientCache::Stop()::{lambda()#1}::operator()() (NewsClientCache.cpp:499)
-==7583==    by 0x463904: void boost::asio::asio_handler_invoke<ByteFountain::NewsClientCache::Stop()::{lambda()#1}>(ByteFountain::NewsClientCache::Stop()::{lambda()#1}, ...) (handler_invoke_hook.hpp:64)
-==7583==  Address 0x12dacc14 is 132 bytes inside a block of size 136 free'd
-==7583==    at 0x4C2C2BC: operator delete(void*) (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==7583==    by 0x47E691: __gnu_cxx::new_allocator<std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2> >::deallocate(std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2>*, unsigned long) (new_allocator.h:110)
-==7583==    by 0x47CDD0: std::allocator_traits<std::allocator<std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2> > >::deallocate(std::allocator<std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2> >&, std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2>*, unsigned long) (alloc_traits.h:377)
-==7583==    by 0x485111: std::_Sp_counted_ptr_inplace<std::__future_base::_State_base, std::allocator<std::__future_base::_State_base>, (__gnu_cxx::_Lock_policy)2>::_M_destroy() (shared_ptr_base.h:417)
-==7583==    by 0x44E44F: std::_Sp_counted_base<(__gnu_cxx::_Lock_policy)2>::_M_release() (shared_ptr_base.h:161)
-==7583==    by 0x44AD5A: std::__shared_count<(__gnu_cxx::_Lock_policy)2>::~__shared_count() (shared_ptr_base.h:546)
-==7583==    by 0x468011: std::__shared_ptr<std::__future_base::_State_base, (__gnu_cxx::_Lock_policy)2>::~__shared_ptr() (shared_ptr_base.h:781)
-==7583==    by 0x468031: std::shared_ptr<std::__future_base::_State_base>::~shared_ptr() (shared_ptr.h:93)
-==7583==    by 0x46CB85: std::promise<bool>::~promise() (future:958)
-==7583==    by 0x45FC33: ByteFountain::NewsClientCache::Stop() (NewsClientCache.cpp:507)
-==7583==    by 0x616742: ByteFountain::NZBDrive::Stop() (NZBDrive.cpp:182)
-==7583==    by 0x487E70: main (ByteFountain.cpp:625)
-==7583== 
-Info: Drive stopped
-
-*////////////////////////////////////
-
 	void NewsClientCache::CancelCommand(uint_fast64_t cid)
 	{
 		m_strand.post([this,cid]()

@@ -86,15 +86,6 @@ void NewsClientCommand::HandleError(NewsClient& client, const error_code& err, c
 	m_logger << Logger::Error<<err.category().name()<<"  : "<<err.message()<<" ("<<err<<")"<< Logger::End;
 	return ClientError(client);
 }
-/*
-TODO:
-Error: system  : Broken pipe (system:32)
-Error: OnErrorCancel: segment 79 <dfQdRpR9DgcZsUqwSY5E_14o53@JBinUp.local>
-Debug: Command failed
-terminate called after throwing an instance of 'std::bad_weak_ptr'
-  what():  std::bad_weak_ptr
-Aborted
-*/
 
 void NewsClientCommand::OnCommandCancel()
 {
