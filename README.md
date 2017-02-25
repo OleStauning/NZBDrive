@@ -2,15 +2,16 @@
 Mount NZB files as drives or folders in Linux or Windows (under construction!).
 
 ## Dependencies
-* C++11
+* C++11 (Visual Studio 2015 on Windows)
 * Tinyxml2
-* Libfuse on Linux
-* Dokanx on Windows
 * Openssl
 * Boost libraries:
   * thread
   * filesystem
   * system
+* Libfuse (Linux)
+* Dokany (Windows)
+* Extended WPF Toolkit (Windows)
 
 ## How to compile on Linux
 Install prerequisites and run `make` in the src-directory. This should generate an executable `nzbmounter`.
@@ -73,7 +74,7 @@ Download the Community Edition of the Extended WPF Toolkit from <http://wpftoolk
 Finally: open the solution file NZBDrive.sln in Visual Studio and Build.
 
 You will now have a directory structure like this:
-
+```
 /
 ├── boost/
 ├── dokany/
@@ -91,7 +92,7 @@ You will now have a directory structure like this:
 │   └── README.md
 ├── openssl/
 └── tinyxml2/
-
+```
 The binaries are located in x86/x64.
 
 ## Usage in Linux

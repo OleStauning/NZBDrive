@@ -12,6 +12,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBDriveDLL", "Windows\NZBD
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NZBDrive", "Windows\NZBDrive\NZBDrive.csproj", "{865BADCC-BE96-4BD4-AD62-395185C06AA3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2CF79217-FE26-4761-93B0-401BA750B45D} = {2CF79217-FE26-4761-93B0-401BA750B45D}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBDriveLib", "NZBDriveLib\NZBDriveLib.vcxproj", "{13B3E8BA-6050-4532-8AB4-2D4E891A11BC}"
 EndProject
