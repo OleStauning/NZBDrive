@@ -1,0 +1,19 @@
+﻿<Window x:Class="NZBDrive.View.InfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:control="clr-namespace:NZBDrive.WPFMessageView"
+        Title="Information" 
+        SizeToContent="Height"
+        Width="450"
+        MinWidth="450"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" 
+        Icon="/NZBDrive;component/Resources/NZBDriveNone.ico">
+    <Grid>
+        <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="OK"  ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Comment.ico" >
+            <TextBlock Text="{Binding TextMessage}" TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10 10 10 10" />
+        </control:WPFMessageViewControl>
+    </Grid>
+</Window>
+

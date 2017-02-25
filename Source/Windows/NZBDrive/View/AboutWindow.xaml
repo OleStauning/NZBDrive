@@ -1,0 +1,22 @@
+﻿<Window x:Class="NZBDrive.View.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:control="clr-namespace:NZBDrive.WPFMessageView"
+        Title="About NZBDrive Usenet Reader" 
+        SizeToContent="Height"
+        Width="375"
+        MinWidth="350"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" 
+        Icon="/NZBDrive;component/Resources/NZBDriveNone.ico">
+
+    <Grid>
+        <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="OK" ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Information.ico" >
+            <TextBlock TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10 10 10 10" >
+                NZBDrive <TextBlock Text="{Binding CurrentVersionString}"/>. Copyright © 2015 ByteFountain.
+            Find more information on <Hyperlink NavigateUri="http://www.nzbdrive.com" RequestNavigate="Hyperlink_RequestNavigate">www.nzbdrive.com</Hyperlink>
+            </TextBlock>
+        </control:WPFMessageViewControl>
+    </Grid>
+</Window>

@@ -1,0 +1,56 @@
+﻿<Window x:Class="NZBDrive.View.LicenseWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:NZBDrive.View"
+        xmlns:control="clr-namespace:NZBDrive.WPFMessageView"
+        Title="License"
+        SizeToContent="Height"
+        Width="550"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" 
+        Icon="/NZBDrive;component/Resources/NZBDriveNone.ico" Loaded="Window_Loaded">
+
+    <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="OKCancel" 
+                                   ButtonOKIsEnabled="{Binding ValidLicenseKey, Mode=OneWay}" 
+                                   ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Lock.ico" >
+            <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Margin="10" TextWrapping="Wrap">NZBDrive is a shareware application with certain restrictions. You can only mount three NZB files 
+                at a time and the application will only work for 15 minutes before you need to restart. You are welcome to use the application for free with 
+                these restrictions. However, if you want to use NZBDrive without restrictions then you need to purchase a license. <LineBreak/><LineBreak/>
+                Please visit 
+                <Hyperlink NavigateUri="http://www.nzbdrive.com/license" RequestNavigate="Hyperlink_RequestNavigate">www.nzbdrive.com</Hyperlink>
+                to buy a license and support the development of NZBDrive.<LineBreak/><LineBreak/>
+                Enter the 56 character license key here:
+            </TextBlock>
+            <TextBox Name="TextBoxLicense" Text="{Binding LicenseKey, UpdateSourceTrigger=PropertyChanged}" MaxLength="56" Margin="10" Padding="5" HorizontalAlignment="Stretch" Grid.Row="1" TextWrapping="Wrap"  />
+
+<!--
+            <Grid Grid.Row="2" Grid.Column="0" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Content="OK" Grid.Row="0" Grid.Column="1"  Name="OKButton" MinWidth="93" Margin="5" Padding="5" IsEnabled="{Binding ValidLicenseKeyLength, Mode=OneWay}" IsDefault="true" Click="OKButton_Click" VerticalAlignment="Center"/>
+
+                <Button Content="Cancel" Grid.Row="0" Grid.Column="2" Name="CancelButton" MinWidth="93" IsCancel="true" Margin="5" Padding="5" VerticalAlignment="Center"/>
+
+            </Grid>
+-->
+        </Grid>
+    </control:WPFMessageViewControl>
+</Window>

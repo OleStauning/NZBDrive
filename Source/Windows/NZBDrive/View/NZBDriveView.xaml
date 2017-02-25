@@ -1,0 +1,52 @@
+﻿<UserControl x:Class="NZBDrive.View.NZBDriveView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="652.3" d:DesignWidth="982">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <GridSplitter IsTabStop="true" ResizeDirection="Rows" Height="5" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="1" Grid.RowSpan="1" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+        <GridSplitter IsTabStop="true" ResizeDirection="Rows" Height="5" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="3" Grid.RowSpan="1" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+        <GridSplitter IsTabStop="true" ResizeDirection="Rows" Height="5" Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="5" Grid.RowSpan="1" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <DockPanel Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+                    <local:ServerListView NewsServerCollection="{Binding NewsServerCollection}"/>
+                </DockPanel>
+                <GridSplitter ResizeDirection="Columns" Grid.Column="1" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" Width="5" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0"/>
+                <DockPanel Grid.Column="2" Grid.ColumnSpan="1" Grid.Row="0" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+                    <Border BorderBrush="Gray" BorderThickness="1">
+                        <local:ThrottlingEditBox DataContext="{Binding NewsServerThrottling}"/>
+                    </Border>
+                </DockPanel>
+            </Grid>
+        </DockPanel>
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="2" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+            <local:NZBFileListView x:Name="NZBFileListView" DataContext="{Binding MountedNZBFileList}"/>
+        </DockPanel>
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="4" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+            <local:NZBFilePartListView DataContext="{Binding SelectedFileDetails}"/>
+        </DockPanel>
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="1" Grid.Row="6" Grid.RowSpan="1" LastChildFill="True" Width="Auto" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+            <local:LogListView DataContext="{Binding Log}"/>
+        </DockPanel>
+
+    </Grid>
+</UserControl>

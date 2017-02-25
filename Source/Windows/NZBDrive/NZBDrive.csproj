@@ -1,0 +1,371 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{865BADCC-BE96-4BD4-AD62-395185C06AA3}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NZBDrive</RootNamespace>
+    <AssemblyName>NZBDrive</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\..\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\..\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\NZBDriveNone.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.Shell.Immutable.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NZBDriveDLL">
+      <HintPath>..\..\x86\Debug\NZBDriveDLL.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\..\..\..\Extended WPF Toolkit Binaries\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="View\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ClearCachePathWindow.xaml.cs">
+      <DependentUpon>ClearCachePathWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ErrorWindow.xaml.cs">
+      <DependentUpon>ErrorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\InfoWindow.xaml.cs">
+      <DependentUpon>InfoWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SuggestUsenetProviderWindow.xaml.cs">
+      <DependentUpon>SuggestUsenetProviderWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WPFMessageView\Commands\CommandReference.cs" />
+    <Compile Include="WPFMessageView\Commands\DelegateCommand.cs" />
+    <Compile Include="WPFMessageView\WPFMessageViewButtons.cs" />
+    <Compile Include="WPFMessageView\WPFMessageViewResult.cs" />
+    <Compile Include="WPFMessageView\WPFMessageViewControl.xaml.cs">
+      <DependentUpon>WPFMessageViewControl.xaml</DependentUpon>
+    </Compile>
+    <Page Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="Model\DataRateUnit.cs" />
+    <Compile Include="Model\DataSizeUnit.cs" />
+    <Compile Include="Model\Log.cs" />
+    <Compile Include="Model\LogEntry.cs" />
+    <Compile Include="Model\MountStatus.cs" />
+    <Compile Include="Model\NewsServer.cs" />
+    <Compile Include="Model\NewsServerCollection.cs" />
+    <Compile Include="Model\NewsServerConnection.cs" />
+    <Compile Include="Model\NewsServerConnectionStatus.cs" />
+    <Compile Include="Model\NewsServerEncryption.cs" />
+    <Compile Include="Model\NewsServerStatus.cs" />
+    <Compile Include="Model\NewsServerThrottling.cs" />
+    <Compile Include="Model\NZBDriveModel.cs" />
+    <Compile Include="Model\NZBDriveSettings.cs" />
+    <Compile Include="Model\NZBDriveStatus.cs" />
+    <Compile Include="Model\NZBFile.cs" />
+    <Compile Include="Model\NZBFileCollection.cs" />
+    <Compile Include="Model\NZBFilePart.cs" />
+    <Compile Include="Model\NZBFilePartCollection.cs" />
+    <Compile Include="Model\NZBDriveOptions.cs" />
+    <Compile Include="Model\NZBFileStatus.cs" />
+    <Compile Include="Model\ThrottlingMode.cs" />
+    <Compile Include="View\AutoScrollingListView.cs" />
+    <Compile Include="View\ColorVector.xaml.cs">
+      <DependentUpon>ColorVector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ConnectionStatusToColorConverter.cs" />
+    <Compile Include="View\ConnectionStatusView.xaml.cs">
+      <DependentUpon>ConnectionStatusView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\DebugDataBindingConverter.cs" />
+    <Compile Include="View\EnumListExtension.cs" />
+    <Compile Include="View\IconToolBar.xaml.cs">
+      <DependentUpon>IconToolBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LicenseWindow.xaml.cs">
+      <DependentUpon>LicenseWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LogColorConverter.cs" />
+    <Compile Include="View\LogListView.xaml.cs">
+      <DependentUpon>LogListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NZBDriveView.xaml.cs">
+      <DependentUpon>NZBDriveView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NZBFileListView.xaml.cs">
+      <DependentUpon>NZBFileListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NZBFilePartListView.xaml.cs">
+      <DependentUpon>NZBFilePartListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NZBFileSegmentStatusToColorConverter.cs" />
+    <Compile Include="View\OkCancelControl.xaml.cs">
+      <DependentUpon>OkCancelControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\OptionsWindow.xaml.cs">
+      <DependentUpon>OptionsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ProvideToolboxControlAttribute.cs" />
+    <Compile Include="View\ServerEditBox.xaml.cs">
+      <DependentUpon>ServerEditBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ServerEditWindow.xaml.cs">
+      <DependentUpon>ServerEditWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ServerListView.xaml.cs">
+      <DependentUpon>ServerListView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\NZBDriveStatusBox.xaml.cs">
+      <DependentUpon>NZBDriveStatusBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ThrottlingEditBox.xaml.cs">
+      <DependentUpon>ThrottlingEditBox.xaml</DependentUpon>
+    </Compile>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="View\AboutWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ClearCachePathWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ColorVector.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\ConnectionStatusView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\ErrorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\IconToolBar.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\InfoWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LicenseWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LogListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\NZBDriveView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\NZBFileListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\NZBFilePartListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\OkCancelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\OptionsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ServerEditBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\ServerEditWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\ServerListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\NZBDriveStatusBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SuggestUsenetProviderWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ThrottlingEditBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="WPFMessageView\WPFMessageViewControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Arrow-down.ico" />
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Unlock.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Options-2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Close-delete.ico" />
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Computer.ico" />
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Lock.ico" />
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Search-lense.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\NZBDriveNone.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Attention.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Information.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Network.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Help.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icojam-Blueberry-Basic-Comment.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

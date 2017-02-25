@@ -1,0 +1,85 @@
+﻿<UserControl x:Class="NZBDrive.View.NZBFileListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="920">
+    <UserControl.Resources>
+        <local:EnumConverter x:Key="enumConverter"/>
+        <local:FileStatusConverter x:Key="fileStatusConverter"/>
+        <ContextMenu x:Key="NZBFileListMenu">
+            <MenuItem Header="Open" Click="MenuItem_Open_Click"/>
+            <MenuItem Header="Unmount" Click="MenuItem_Unmount_Click"/>
+        </ContextMenu>
+    </UserControl.Resources>
+
+    <ListView x:Name="FileList" Margin="0" HorizontalAlignment="Stretch" ItemsSource="{Binding Path=.}" 
+              SelectionChanged="ServersList_SelectionChanged" ContextMenu="{StaticResource NZBFileListMenu}" PreviewKeyDown="fileList_PreviewKeyDown">
+        <ListView.Resources>
+            <Style x:Key="RightHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+            <Style x:Key="LeftHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+        </ListView.Resources>
+        <ListView.ItemContainerStyle>
+            <Style TargetType="{x:Type ListViewItem}">
+                <EventSetter Event="MouseDoubleClick" Handler="NZBFileListView_MouseDoubleClick"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+        </ListView.ItemContainerStyle>
+
+        <ListView.View>
+            <GridView>
+                <GridViewColumn Width="0"/>
+                <GridViewColumn Width="400" HeaderContainerStyle="{StaticResource LeftHeaderStyle}"
+                                Header="NZB Filename" DisplayMemberBinding="{Binding FileName}"/>
+                <GridViewColumn Width="70" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Parts">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=Parts}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="100" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Size">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Path="FileSize" />
+                                        <Binding Path="FileSizeUnit" Converter="{StaticResource enumConverter}"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+
+                <GridViewColumn Width="200" Header="Status">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <ProgressBar Foreground="{Binding Path=FileStatus, Converter={StaticResource fileStatusConverter}, Mode=OneWay}" 
+                                             Minimum="0" Maximum="100" Value="{Binding Progress}" Width="200" Height="20" />
+                                <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{1} {0:0}%">
+                                            <Binding Path="Progress" />
+                                            <Binding Path="MountStatus" Converter="{StaticResource enumConverter}"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </Grid>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+            </GridView>
+        </ListView.View>
+    </ListView>
+</UserControl>

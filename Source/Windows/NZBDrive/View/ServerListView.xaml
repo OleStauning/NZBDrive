@@ -1,0 +1,115 @@
+﻿<UserControl x:Class="NZBDrive.View.ServerListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             mc:Ignorable="d" >
+    <UserControl.Resources>
+        <local:EnumConverter x:Key="enumConverter"/>
+        <ContextMenu x:Key="ServersListMenu">
+            <MenuItem Header="Create" Click="MenuItem_Create_Click"/>
+            <MenuItem Header="Change" Click="MenuItem_Change_Click"/>
+            <MenuItem Header="Delete" Click="MenuItem_Delete_Click"/>
+        </ContextMenu>
+        <local:DebugDataBindingConverter x:Key="DebugBinding"/>
+        <local:ConnectionStatusToColorConverter x:Key="ColorConverter"/>
+    </UserControl.Resources>
+
+    <ListView x:Name="ServersList" Margin="0" ItemsSource="{Binding Path=NewsServerCollection}"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+              ContextMenuOpening="ListView_ContextMenuOpening" ContextMenu="{StaticResource ServersListMenu}" KeyDown="ServersList_KeyDown">
+        <ListView.Resources>
+            <Style x:Key="RightHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+            <Style x:Key="LeftHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+        </ListView.Resources>
+        <ListView.ItemContainerStyle>
+            <Style TargetType="{x:Type ListViewItem}">
+                <EventSetter Event="MouseDoubleClick" Handler="ServerListView_MouseDoubleClick"/>
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.View>
+            <GridView>
+                <GridViewColumn Width="0"/>
+                <GridViewColumn Width="200" HeaderContainerStyle="{StaticResource LeftHeaderStyle}" 
+                                Header="Server" DisplayMemberBinding="{Binding DisplayServer}" />
+                <GridViewColumn Width="80" HeaderContainerStyle="{StaticResource RightHeaderStyle}" 
+                                Header="Connections">
+                <GridViewColumn.CellTemplate>
+                    <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=ServerStatus.ConnectionCount}" />
+                    </DataTemplate>
+                </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="80" HeaderContainerStyle="{StaticResource RightHeaderStyle}" 
+                                Header="Data Rate">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0:0.00} {1}">
+                                        <Binding Path="ServerStatus.ConnectionDataRate" />
+                                        <Binding Path="ServerStatus.ConnectionDataRateUnit"  Converter="{StaticResource enumConverter}"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="50" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Missing">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=ServerStatus.MissingSegmentCount}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="50" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Timeouts">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=ServerStatus.ConnectionTimeoutCount}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="50"  HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Errors">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=ServerStatus.ErrorCount}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="120" Header="Status">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <ItemsControl IsTabStop="false" ItemsSource="{Binding ServerStatus.ConnectionStatusCollection}">
+                                <ItemsControl.CacheMode>
+                                    <BitmapCache RenderAtScale="1"/>
+                                </ItemsControl.CacheMode>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid VirtualizingPanel.VirtualizationMode="Recycling" Rows="1" Height="10"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Rectangle Stroke="Black" StrokeThickness="0.5" 
+                                                   Fill="{Binding Path=., Converter={StaticResource ColorConverter}}" 
+                                                   Stretch="UniformToFill"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+            </GridView>
+        </ListView.View>
+
+    </ListView>
+</UserControl>

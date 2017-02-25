@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="NZBDrive.View.OkCancelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="50" d:DesignWidth="400">
+    
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <Button Content="OK" Grid.Row="0" Grid.Column="1" Name="OKButton" IsDefault="True" MinWidth="10" Margin="5" Padding="5" Click="OKButton_Click" />
+
+        <Button Content="Cancel" Grid.Row="0" Grid.Column="2" Name="CancelButton" MinWidth="10" Margin="5" Padding="5" IsCancel="true" />
+
+
+    </Grid>
+</UserControl>

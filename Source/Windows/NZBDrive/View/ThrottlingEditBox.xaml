@@ -1,0 +1,44 @@
+﻿<UserControl
+     x:Class="NZBDrive.View.ThrottlingEditBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             xmlns:model="clr-namespace:NZBDrive.Model"
+             mc:Ignorable="d" >
+    <GroupBox Header="Network Throttling" Margin="5">
+        <Grid Margin="0,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Label Content="Mode:" Grid.Column="0" Grid.Row="0"  Margin="5"/>
+            <ComboBox ItemsSource="{Binding Source={local:EnumList {x:Type model:ThrottlingMode}, AsString=true}}" 
+                      SelectedIndex="{Binding Path=ThrottlingModeIndex, Mode=TwoWay}" 
+                      Grid.Column="1" Grid.Row="0" MinWidth="150" Grid.ColumnSpan="2" Margin="5"/>
+            <Label Content="Network Limit:" Grid.Column="0" Grid.Row="1" Margin="5"/>
+            <xctk:IntegerUpDown IsEnabled="{Binding SpeedLimitEnabled}"
+                        Value="{Binding SpeedLimit}" Minimum="1" Maximum="1024" Grid.Column="1" Grid.Row="1"  Margin="5"/>
+            <ComboBox ItemsSource="{Binding Source={local:EnumList {x:Type model:DataRateUnit}, AsString=true}}" 
+                      SelectedIndex="{Binding SpeedLimitUnitIndex}" 
+                      Grid.Column="2" Grid.Row="1" Margin="5"/>
+            <Label IsEnabled="{Binding PreCacheEnabled}"
+                      Content="Pre-cache Size:" Grid.Column="0" Grid.Row="2" Margin="5" />
+            <xctk:IntegerUpDown IsEnabled="{Binding PreCacheEnabled}" Minimum="0" Maximum="1024" 
+                      Value="{Binding PreCacheSize}" Grid.Column="1" Grid.Row="2"  Margin="5" />
+            <ComboBox IsEnabled="{Binding PreCacheEnabled}"
+                      ItemsSource="{Binding Source={local:EnumList {x:Type model:DataSizeUnit}, AsString=true}}"
+                      SelectedIndex="{Binding PreCacheSizeUnitIndex}" 
+                      Grid.Column="2" Grid.Row="2" Margin="5"/>
+        </Grid>
+    </GroupBox>
+</UserControl>

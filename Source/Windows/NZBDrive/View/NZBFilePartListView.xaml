@@ -1,0 +1,104 @@
+﻿<UserControl x:Class="NZBDrive.View.NZBFilePartListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="925">
+    <UserControl.Resources>
+        <local:NZBFileSegmentStatusToColorConverter x:Key="ColorConverter"/>
+    </UserControl.Resources>
+    <ListView x:Name="ServersList" Margin="0" HorizontalAlignment="Stretch" ItemsSource="{Binding Path=.}">
+        <ListView.Resources>
+            <local:NZBFilePartColorConverter x:Key="filePartColorConverter"/>
+            <Style TargetType="{x:Type ListViewItem}">
+                <Setter Property="Background" Value="{Binding MissingSegments, Converter={StaticResource filePartColorConverter}}" />
+            </Style>
+            <Style x:Key="RightHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            </Style>
+            <Style x:Key="LeftHeaderStyle" TargetType="{x:Type GridViewColumnHeader}">
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+        </ListView.Resources>
+        <ListView.ItemContainerStyle>
+            <Style TargetType="{x:Type ListViewItem}">
+                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            </Style>
+        </ListView.ItemContainerStyle>
+        <ListView.View>
+            <GridView>
+                <GridViewColumn Width="0"/>
+                <GridViewColumn Width="400" HeaderContainerStyle="{StaticResource LeftHeaderStyle}"
+                                Header="Filename" DisplayMemberBinding="{Binding FileName}"/>
+                <GridViewColumn Width="100" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Size">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=Size}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="70" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Segments">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=Segments}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="70" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Loading">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=LoadingSegments}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="70" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Missing">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=MissingSegments}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <GridViewColumn Width="70" HeaderContainerStyle="{StaticResource RightHeaderStyle}"
+                                Header="Cached">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding Path=CachedSegments}" />
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+                <!--
+                <GridViewColumn Width="300" Header="Progress">
+                    <GridViewColumn.CellTemplate>
+                        <DataTemplate>
+                            <ItemsControl ItemsSource="{Binding FileSegmentStatusCollection}">
+                                <ItemsControl.CacheMode>
+                                    <BitmapCache RenderAtScale="1"/>
+                                </ItemsControl.CacheMode>
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid VirtualizingPanel.VirtualizationMode="Recycling" Rows="1" Height="15"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Rectangle Stroke="Black" StrokeThickness="1" 
+                                                   Fill="{Binding Path=., Converter={StaticResource ColorConverter}}" 
+                                                   Stretch="UniformToFill"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DataTemplate>
+                    </GridViewColumn.CellTemplate>
+                </GridViewColumn>
+-->
+            </GridView>
+        </ListView.View>
+    </ListView>
+</UserControl>

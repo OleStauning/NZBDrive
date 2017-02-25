@@ -1,0 +1,81 @@
+﻿<Window x:Class="NZBDrive.View.OptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:model="clr-namespace:NZBDrive.Model"
+        xmlns:local="clr-namespace:NZBDrive.View"
+        xmlns:control="clr-namespace:NZBDrive.WPFMessageView"
+        Title="Options"
+        SizeToContent="Height"
+        Width="450"
+        MinWidth="450"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" 
+        Icon="/NZBDrive;component/Resources/NZBDriveNone.ico" Loaded="Window_Loaded">
+    <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="OK" ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Options-2.ico" >
+        <Grid Name="OptionsGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0" Grid.Column="0" Margin="5" 
+                   Content="_Log level:" 
+                   Target="ComboBoxLogLevel" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Margin="5" 
+                      Name="ComboBoxLogLevel" 
+                      ItemsSource="{Binding Source={local:EnumList {x:Type model:LogLevel}, AsString=true}}" 
+                      SelectedIndex="{Binding LogLevelIndex}" />
+
+            
+            <Label Name="CachePathLabel"  Grid.Row="1" Grid.Column="0" Margin="5" 
+                   Content="_Cache Path:"/>
+            <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+
+                <Border VerticalAlignment="Top" Grid.Column="0" Margin="5" BorderThickness="1"
+                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" >
+                    <WindowsFormsHost Name="HostCachePath" Margin="5" />
+                </Border>
+                <Button Grid.Column="1" Margin="5" Padding="5" HorizontalContentAlignment="Left" 
+                    Name="ButtonCachePath" Content="..." Click="ChooseCacheFolder"/>
+            </Grid>
+
+            <Label Grid.Row="2" Grid.Column="0" Margin="5" 
+                   Content="_Drive Letter:"  
+                   Target="ComboBoxDriveLetter"/>
+            <ComboBox Grid.Row="2" Grid.Column="1" Margin="5" Width="Auto" 
+                      Name="ComboBoxDriveLetter"
+                      ItemsSource="{Binding AvailableDriveLetters}" SelectedItem="{Binding DriveLetter}"/>
+
+<!--            
+            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Row="0" Grid.Column="2" MinWidth="93" Margin="5" Padding="5"  
+                        Content="OK" Name="OKButton" IsDefault="true" Click="OKButton_Click" VerticalAlignment="Center"/>
+
+
+
+            </Grid>
+-->
+        </Grid>
+    </control:WPFMessageViewControl>
+</Window>

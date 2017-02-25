@@ -1,0 +1,21 @@
+﻿<Window x:Class="NZBDrive.View.ClearCachePathWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:control="clr-namespace:NZBDrive.WPFMessageView"
+        Title="Clear Cache Path?"
+        SizeToContent="Height"
+        Width="500"
+        MinWidth="350"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" 
+        Icon="/NZBDrive;component/Resources/NZBDriveNone.ico">
+
+    <Grid>
+        <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="YesNo"  ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Help.ico" >
+            <TextBlock TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10 10 10 10" >
+             Cache path was not empty, do you want to delete old cache-files?
+            </TextBlock>
+        </control:WPFMessageViewControl>
+    </Grid>
+</Window>

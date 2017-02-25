@@ -1,0 +1,77 @@
+﻿<UserControl x:Class="NZBDrive.View.ServerEditBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
+             xmlns:local="clr-namespace:NZBDrive.View"
+             xmlns:model="clr-namespace:NZBDrive.Model"
+             mc:Ignorable="d" d:DesignWidth="342">
+    <Grid VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Column="0" Grid.Row="0" 
+               Content="_Servername:" 
+               Target ="TextBoxServerName"/>
+        <TextBox Grid.Column="1" Grid.Row="0" Margin="5" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Padding="2" 
+                 Name="TextBoxServerName" 
+                 Text="{Binding ServerName, UpdateSourceTrigger=PropertyChanged}" />
+
+        <Label Grid.Column="0" Grid.Row="1" 
+               Content="_Port:" 
+               Target="ComboBoxPort"/>
+        <ComboBox  Grid.Column="1" Grid.Row="1" Margin="5" Padding="2" IsEditable="True"
+                   Name="ComboBoxPort"
+                   Text="{Binding Path=Port, Mode=TwoWay}" 
+                   PreviewTextInput="ComboBox_PreviewTextInput" >
+            <ComboBoxItem>119</ComboBoxItem>
+            <ComboBoxItem>443</ComboBoxItem>
+            <ComboBoxItem>563</ComboBoxItem>
+        </ComboBox>
+
+        <Label Grid.Column="0" Grid.Row="2"
+               Content="_Encryption:" 
+               Target="ComboBoxEncryption"/>
+        <ComboBox Grid.Column="1" Grid.Row="2" Margin="5" Padding="2"
+                  Name="ComboBoxEncryption"
+                  ItemsSource="{Binding Source={local:EnumList {x:Type model:NewsServerEncryption}, AsString=true}}" 
+                  SelectedIndex="{Binding Path=EncryptionIndex}" />
+
+        <Label  Grid.Column="0" Grid.Row="3"
+                Content="_Connections:"
+                Target="UpDownConnections"/>
+        <xctk:IntegerUpDown Grid.Column="1" Grid.Row="3"  Margin="5" Padding="2" Minimum="0" Maximum="50" 
+                            Name="UpDownConnections" 
+                            Value="{Binding Connections}"/>
+
+        <Label  Grid.Column="0" Grid.Row="4"
+                Content="_Username:"
+                Target="TextBoxUserName"/>
+        <TextBox  Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="5" Padding="2"
+                  Name="TextBoxUserName"
+                  Text="{Binding UserName}"/>
+
+        <Label Grid.Column="0" Grid.Row="5" 
+               Content="Pass_word:" 
+               Target="PW"/>
+        <PasswordBox Grid.Column="1" Grid.Row="5" Grid.ColumnSpan="2" Margin="5" Padding="2"
+                     Name="PW"
+                     local:PasswordBoxAssistant.BindPassword="true" 
+                     local:PasswordBoxAssistant.BoundPassword="{Binding Path=Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     PasswordChar="*"  />
+
+    </Grid>
+</UserControl>

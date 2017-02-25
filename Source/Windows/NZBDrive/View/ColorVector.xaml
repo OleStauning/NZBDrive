@@ -1,0 +1,26 @@
+﻿<UserControl x:Class="NZBDrive.View.ColorVector"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="300">
+
+    <ItemsControl ItemsSource="{Binding Path=.}">
+        <ItemsControl.CacheMode>
+            <BitmapCache RenderAtScale="1"/>
+        </ItemsControl.CacheMode>
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <UniformGrid VirtualizingPanel.VirtualizationMode="Recycling" Rows="1" Height="15"/>
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+            <DataTemplate>
+                <Rectangle Stroke="Black" StrokeThickness="1" Fill="{Binding .}"  Stretch="UniformToFill"/>
+            </DataTemplate>
+        </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+</UserControl>
