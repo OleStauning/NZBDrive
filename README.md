@@ -71,7 +71,7 @@ Clone tinyxml2 from <https://github.com/leethomason/tinyxml2.git> in the same di
 
 Download the Community Edition of the Extended WPF Toolkit from <http://wpftoolkit.codeplex.com/>, and unpack to in the same directory as you cloned NZBDrive.
 
-Finally: open the solution file NZBDrive.sln in Visual Studio and Build.
+Finally: open the solution file NZBDrive.sln in Visual Studio and Build the project "NZBDrive".
 
 You will now have a directory structure like this:
 ```
