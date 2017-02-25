@@ -12,4 +12,4 @@ libCommon.a: $(OBJ)
 .PHONY: clean
 
 clean:
-	rm -f *.o *~ core libCommon.a 
+	rm -f *.o *~ core libNZBDrive.a 

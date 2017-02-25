@@ -122,7 +122,7 @@ namespace ByteFountain
 		if (xmlerr != XMLError::XML_SUCCESS)
 		{
 			std::ostringstream oss;
-			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.ErrorIDToName(xmlerr)<<std::endl;
+			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.GetErrorStr1()<<std::endl;
 			err_msg=oss.str();
 			
 			return nzb();		
