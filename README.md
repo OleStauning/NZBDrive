@@ -28,8 +28,9 @@ Clone the Dokany library from <https://github.com/OleStauning/dokany.git> in the
 
 Enter the dokany directory and run bat-file `build.bat`. 
 
-Read the wiki page <https://github.com/dokan-dev/dokany/wiki/Installation> about how to install dokany on your computer. 
-If the dokany driver is signed by a test signature then you have to enable windows test mode:
+Read the wiki page <https://github.com/dokan-dev/dokany/wiki/Installation> about how to install dokany on your computer, or you 
+can just download an installer at <https://github.com/dokan-dev/dokany/releases>. Notice that you have to install "Test Mode" 
+on Windows if you are installing the dokan driver on 64 bit Windows if your drive is signed by the test certificate:
 ```
 bcdedit.exe -set loadoptions DDISABLE_INTEGRITY_CHECKS
 bcdedit.exe -set TESTSIGNING ON
