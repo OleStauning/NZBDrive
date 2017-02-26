@@ -1,3 +1,3 @@
 nzbmounter:
-	cd Common && $(MAKE)
+	cd NZBDriveLib && $(MAKE)
 	cd Linux && $(MAKE)
