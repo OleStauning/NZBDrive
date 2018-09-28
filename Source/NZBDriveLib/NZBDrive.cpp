@@ -106,9 +106,15 @@ namespace ByteFountain
 	{
 		m_pImpl->Stop();
 	}
-	int32_t NZBDrive::Mount(const boost::filesystem::path& mountdir, const boost::filesystem::path& nzbfile, MountStatusFunction mountStatusFunction)
+	int32_t NZBDrive::Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
-		return m_pImpl->Mount(mountdir, nzbfile, mountStatusFunction);
+		return m_pImpl->Mount(mountdir, nzbfile, mountStatusFunction, mountOptions);
+	}
+	int32_t NZBDrive::Mount(const boost::filesystem::path& mountdir, const nzb& nzb, 
+		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	{
+		return m_pImpl->Mount(mountdir, "", nzb, mountStatusFunction, mountOptions);
 	}
 	int32_t NZBDrive::Unmount(const boost::filesystem::path& mountdir)
 	{

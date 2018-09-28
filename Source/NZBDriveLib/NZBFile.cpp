@@ -409,11 +409,11 @@ bool NZBFile::Preload(const bool pre_check_segments, CancelSignal* cancel)
 		if (info.msgIDs.empty())
 		{
 			std::ostringstream errmsg;
-			errmsg<<"Broken NZB-file: Missing segment number"<<idx+1<<" in NZB-file";
+			errmsg<<"Broken NZB-file: Missing segment number "<<idx+1<<" in NZB-file";
 			m_log<<Logger::Error<<errmsg.str()<<Logger::End;
 
 			m_segments[idx].status = SegmentState::DownloadFailed;
-
+			
 			return true;
 		}
 		

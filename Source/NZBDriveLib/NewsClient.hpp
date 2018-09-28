@@ -14,7 +14,7 @@
 #include "NewsClientSocket.hpp"
 #include <boost/algorithm/string.hpp>
 #include <queue>
-
+#include <signal.h>
 
 #define ASIOMaxBufferSize 4096
 
@@ -44,7 +44,7 @@ private:
 	NewsClientCommand* m_active;
 	boost::asio::deadline_timer m_timer;
 	bool m_timeout;
-	unsigned int m_handles;
+	std::atomic<unsigned int> m_handles;
 	bool m_disconnecting;
 	
 protected:
@@ -57,13 +57,11 @@ private:
 		NewsClient& m_client;
 		HandleCount(NewsClient& client) : m_client(client) 
 		{ 
-			if (m_client.m_handles == 0) m_client.OnStarted();
-			++m_client.m_handles;
+			if (m_client.m_handles++ == 0) m_client.OnStarted();
 		}
 		~HandleCount()
 		{ 
-			--m_client.m_handles; 
-			if (m_client.m_handles == 0) m_client.OnStopped();
+			if (--m_client.m_handles == 0) m_client.OnStopped();
 		}
 		HandleCount& operator=(const HandleCount&) = delete;
 		HandleCount(const HandleCount& other) : m_client(other.m_client){ ++m_client.m_handles; }
@@ -97,6 +95,12 @@ public:
 
 	virtual ~NewsClient()
 	{
+        if (m_handles>0)
+        {
+            m_logger << Logger::Error << "~NewsClient has been called with " << m_handles << " handles" << Logger::End;
+            raise (SIGABRT);
+        }
+        
 		// THE FOLLOWING close() HAS BEEN REMOVED SINCE WAKEUP AFTER HIBERNATION CAUSES close TO THROW THE FOLLOWING EXCEPTION:
 		// terminate called after throwing an instance of 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::system::system_error> >'
 		// what():  shutdown: Transport endpoint is not connected

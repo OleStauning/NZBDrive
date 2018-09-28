@@ -38,12 +38,13 @@ namespace ByteFountain
 		bool finalizing;
 		int parts_loaded;
 		int parts_total;
-//		bool canceling;
 		CancelSignal cancel;
 		FileErrorFlags errors;
+		bool extract_archives;
 		
-		NZBDriveMounter(NZBDriveIMPL& drv, const int32_t id, const boost::filesystem::path& dir, Logger& log,
-			MountStatusFunction handler);
+		NZBDriveMounter(NZBDriveIMPL& drv, const bool extract_archives,
+			const int32_t id, const boost::filesystem::path& dir, 
+			Logger& log, MountStatusFunction handler);
 		~NZBDriveMounter();
 		void StopInsertFile();
 		void RawInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir);

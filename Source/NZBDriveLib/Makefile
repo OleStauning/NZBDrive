@@ -6,7 +6,7 @@ OBJ = Logger.o MultipartFile.o NewsClientCache.o NewsClientCommand.o NewsClientC
 .cpp.o:
 	$(CC) -I. -c -o $@ $< 
 
-libCommon.a: $(OBJ)
+libNZBDrive.a: $(OBJ)
 	ar rcs $@ $^
 
 .PHONY: clean

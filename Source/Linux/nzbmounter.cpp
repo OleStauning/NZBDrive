@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
 	for(int i=2;i<argc;++i)
 	{
 		nzbfile=argv[i];
-		drive.Mount(boost::filesystem::path(nzbfile).stem(),nzbfile,onMountStatus);
+		drive.Mount(nzbfile,nzbfile,onMountStatus,MountOptions::DontExtractArchives);
 	}
 	
 	

@@ -22,10 +22,12 @@ namespace ByteFountain
 		if (h) h(std::forward<TArgs>(args)...);
 	}
 
-	NZBDriveMounter::NZBDriveMounter(NZBDriveIMPL& drv, const int32_t id, const boost::filesystem::path& dir, Logger& log,
+	NZBDriveMounter::NZBDriveMounter(NZBDriveIMPL& drv, const bool extract_archives,
+		const int32_t id, const boost::filesystem::path& dir, Logger& log,
 		MountStatusFunction handler) :
 		state(Mounting),
 		drive(drv),
+		extract_archives(extract_archives),
 		logger(log),
 		nzbID(id),
 		mountdir(dir),
@@ -91,16 +93,16 @@ namespace ByteFountain
 
 		boost::filesystem::path filename=file->GetFileName();
 			
-		if (split_file_factory.AddFile(dir,file))
+		if (extract_archives && split_file_factory.AddFile(dir,file))
 		{
 			logger<<Logger::Debug<<"File was a split file: "<<dir/filename<<Logger::End;
 			StopInsertFile();
 		}
-		else if (rar_file_factory.AddFile(dir,file,cancel))
+		else if (extract_archives && rar_file_factory.AddFile(dir,file,cancel))
 		{
 			logger<<Logger::Debug<<"File was a rar file: "<<dir/filename<<Logger::End;
 		}
-		else if (zip_file_factory.AddFile(dir,file,cancel))
+		else if (extract_archives && zip_file_factory.AddFile(dir,file,cancel))
 		{
 			logger<<Logger::Debug<<"File was a zip file: "<<dir/filename<<Logger::End;
 		}

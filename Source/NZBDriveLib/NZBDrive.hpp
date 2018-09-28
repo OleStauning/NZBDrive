@@ -12,6 +12,7 @@
 #include "SegmentState.hpp"
 #include "ContentType.hpp"
 #include "ConnectionState.hpp"
+#include "nzb.hpp"
 #include <stdint.h>
 #include <memory>
 #include <string>
@@ -54,7 +55,10 @@ namespace ByteFountain
 		bool Start();
 		void Stop();
 
-		int32_t Mount(const boost::filesystem::path& mountdir, const boost::filesystem::path& nzbfile, MountStatusFunction mountStatusFunction);
+		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
+		int32_t Mount(const boost::filesystem::path& mountdir, const nzb& nzb, 
+			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
 		int32_t Unmount(const boost::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();

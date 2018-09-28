@@ -88,6 +88,21 @@ namespace ByteFountain
 		MountErrorCodeEND = -8 //<-- MUST BE THE LAST ENTRY
 	};
 
+	enum class MountOptions : int
+	{
+		Default = 0x000,
+		DontExtractArchives = 0x001
+	};
+	
+	inline MountOptions operator|(const MountOptions lhs, const MountOptions rhs) 
+	{
+		return static_cast<MountOptions>(static_cast<int>(lhs) | static_cast<int>(rhs));
+	}
+	inline MountOptions operator&(const MountOptions lhs, const MountOptions rhs) 
+	{
+		return static_cast<MountOptions>(static_cast<int>(lhs) & static_cast<int>(rhs));
+	}
+	
 	typedef std::function< void(const LogLineLevel lvl, const std::string& msg)> LoggingFunction;
 	typedef std::function< void(const ConnectionState state, const int32_t server, const int32_t thread) > ConnectionStateChangedFunction;
 	typedef std::function< void(const int64_t time, const int32_t server, const uint64_t bytesTX, uint64_t bytesRX,
@@ -127,7 +142,7 @@ namespace ByteFountain
 		virtual bool Start() = 0;
 		virtual void Stop() = 0;
 
-		virtual int32_t Mount(const boost::filesystem::path& mountdir, const boost::filesystem::path& nzbfile, MountStatusFunction mountStatusFunction) = 0;
+		virtual int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default) = 0;
 		virtual int32_t Unmount(const boost::filesystem::path& mountdir) = 0;
 
 		virtual std::shared_ptr<IDirectory> GetRootDir() = 0;
