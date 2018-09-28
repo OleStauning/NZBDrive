@@ -117,8 +117,9 @@ namespace ByteFountain
 
 		RateLimiter::Parameters GetRateLimiterConfiguration();
 
-		int32_t Mount(const int32_t mountID, const boost::filesystem::path& expanded_cache_path, const boost::filesystem::path& mountdir, const nzb& nzb,
-			MountStatusFunction mountStatusFunction);
+		int32_t Mount(const int32_t mountID, const boost::filesystem::path& expanded_cache_path, 
+			const boost::filesystem::path& mountdir, const nzb& nzb, 
+			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
 		NZBDriveIMPL::MountStates::iterator Unmount(const NZBDriveIMPL::MountStates::iterator& it_state);
 
 	protected:
@@ -158,7 +159,10 @@ namespace ByteFountain
 		bool Start();
 		void Stop();
 
-		int32_t Mount(const boost::filesystem::path& mountdir, const boost::filesystem::path& nzbfile, MountStatusFunction mountStatusFunction);
+		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
+		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+			const nzb& nzb, MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
 		int32_t Unmount(const boost::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();

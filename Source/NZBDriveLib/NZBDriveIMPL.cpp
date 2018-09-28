@@ -406,10 +406,11 @@ namespace ByteFountain
 		ResetHandlers();
 	}
 
-	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const filesystem::path& expanded_cache_path, const filesystem::path& mountdir, const nzb& mountfile,
-		MountStatusFunction mountStatusFunction)
+	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const filesystem::path& expanded_cache_path, const filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
-		auto drive_mounter = std::make_shared<NZBDriveMounter>(*this, nzbID, mountdir, m_log, mountStatusFunction);
+		bool exctract_archives = (mountOptions & MountOptions::DontExtractArchives) == MountOptions::Default;
+		
+		auto drive_mounter = std::make_shared<NZBDriveMounter>(*this, exctract_archives, nzbID, mountdir, m_log, mountStatusFunction);
 
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
@@ -440,13 +441,12 @@ namespace ByteFountain
 				{
 					if (drive_mounter->state == NZBDriveMounter::Mounting)
 					{
-						m_log << Logger::PopupError << "Failed to allocate cache-file. Mounting of " << mountdir << " will be canceled.\nPlease free some disk-space and try again." << Logger::End;
-						Unmount(mountdir);
+						m_log << Logger::PopupError << "Failed to allocate cache-file. Mounting of " << mountdir << " will not succeed.\nPlease free some disk-space and try again." << Logger::End;
+//						Unmount(mountdir);
 					}
-					return;
+					drive_mounter->StopInsertFile();
 				}
-
-				if (filename.empty())
+				else if (filename.empty())
 				{
 					for (int n = 1; true; ++n)
 					{
@@ -484,7 +484,24 @@ namespace ByteFountain
 		return nzbID;
 	}
 
-	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const filesystem::path& nzbfile, MountStatusFunction mountStatusFunction)
+	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
+		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	{
+		std::string err_msg;
+
+		nzb mountfile = loadnzb(nzbfile, err_msg);
+
+		if (err_msg.size()>0)
+		{
+			m_log << Logger::PopupError << err_msg << Logger::End;
+			return MountErrorCode::LoadNZBFileError;
+		}
+        
+        return Mount(mountdir,nzbfile,mountfile,mountStatusFunction, mountOptions);
+    }
+	
+	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
+		const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		if (m_state != Started) return MountErrorCode::MountingFailed;
 
@@ -523,19 +540,13 @@ namespace ByteFountain
 			}
 		}
 
-		std::string err_msg;
-
-		nzb mountfile = loadnzb(nzbfile, err_msg);
-
-		if (err_msg.size()>0)
-		{
-			m_log << Logger::PopupError << err_msg << Logger::End;
-			return MountErrorCode::LoadNZBFileError;
-		}
-
 		if (!Validate(mountfile))
 		{
-			m_log << Logger::PopupError << "File is not a valid nzb-file: " << nzbfile << Logger::End;
+            if (nzbfile.empty())
+                m_log << Logger::PopupError << "File is not a valid nzb-file" << Logger::End;
+            else
+                m_log << Logger::PopupError << "File is not a valid nzb-file: " << nzbfile << Logger::End;
+            
 			return MountErrorCode::InvalidNZBFileError;
 		}
 
@@ -545,11 +556,15 @@ namespace ByteFountain
 
 		if (nzbbytes>sinfo.available)
 		{
-			m_log << Logger::PopupError << "Not enough space in cache directory to mount: " << nzbfile << Logger::End;
+            if (nzbfile.empty())
+                m_log << Logger::PopupError << "Not enough space in cache directory to mount nzb-file" << Logger::End;
+            else
+                m_log << Logger::PopupError << "Not enough space in cache directory to mount nzb-file: " << nzbfile << Logger::End;
+            
 			return MountErrorCode::CacheDirFullError;
 		}
 
-		return Mount(nzbID, expanded_cache_path, mountdir, mountfile, mountStatusFunction);
+		return Mount(nzbID, expanded_cache_path, mountdir, mountfile, mountStatusFunction, mountOptions);
 	}
 
 	NZBDriveIMPL::MountStates::iterator NZBDriveIMPL::Unmount(const MountStates::iterator& it_state)
