@@ -48,9 +48,13 @@ namespace rar
 #endif
 	;
 
-	inline bool Validate(const mark_head& head)
+	inline bool Validate40(const mark_head& head)
 	{ 
 		return head.head_crc==0x6152 && head.header_type==0x72 && head.head_flags==0x1a21 && head.head_size==0x0007; 
+	}
+	inline bool Validate50(const mark_head& head)
+	{ 
+		return head.head_crc==0x6152 && head.header_type==0x72 && head.head_flags==0x1a21 && head.head_size==0x0107; 
 	}
 	
 	
@@ -129,7 +133,7 @@ namespace rar
 
 	inline bool Validate(const rar_head& head)
 	{ 
-		return Validate(head.mark) && Validate(head.main);
+		return Validate40(head.mark) && Validate(head.main);
 	}
 		
 	struct file_head

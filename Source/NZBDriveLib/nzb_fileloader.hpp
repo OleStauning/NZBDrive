@@ -8,13 +8,12 @@
 
 #ifndef NZB_FILELOADER_HPP
 #define NZB_FILELOADER_HPP
-#include <boost/filesystem.hpp>
 #include <string>
 
 namespace ByteFountain
 {
 	struct nzb;
-	nzb loadnzb(const boost::filesystem::path& nzbfile, std::string& err_msg);
+	nzb loadnzb(const std::string& location, std::string& err_msg);
 }
 
 #endif

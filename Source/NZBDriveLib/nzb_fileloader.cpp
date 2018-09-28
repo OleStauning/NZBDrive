@@ -11,12 +11,15 @@
 #include "text_tool.hpp"
 #include <tinyxml2.h>
 #include <boost/lexical_cast.hpp>
+#include <boost/filesystem.hpp>
+
 
 namespace ByteFountain
 {
 	using namespace tinyxml2;
+//	using namespace boost::network;
 
-	nzb loadnzb(const boost::filesystem::path& nzbfile, XMLDocument& doc, std::string& err_msg)
+	nzb loadnzb(const std::string& nzbfile, XMLDocument& doc, std::string& err_msg)
 	{
 
 		XMLHandle hDoc(&doc);
@@ -32,7 +35,7 @@ namespace ByteFountain
 				std::ostringstream oss;
 				oss<<"Invalid nzb file: "<<nzbfile<<std::endl;
 				err_msg=oss.str();
-				return nzb();		
+				return nzb();
 			}
 			// save this for later
 			hRoot=XMLHandle(pElem);
@@ -102,7 +105,7 @@ namespace ByteFountain
 		return nzb;
 	}
 
-	nzb loadnzb(const boost::filesystem::path& nzbfile, std::string& err_msg)
+	nzb loadnzb_from_file(const std::string& location, const boost::filesystem::path& nzbfile, std::string& err_msg)
 	{
 		err_msg.clear();
 #ifdef _MSC_VER
@@ -112,7 +115,7 @@ namespace ByteFountain
 			std::ostringstream oss;
 			oss<<"Could not find file: "<<nzbfile<<std::endl;
 			err_msg=oss.str();
-			return nzb();		
+			return nzb();
 		}
 #else
 		FILE* file = fopen(nzbfile.string().c_str(), "rb");
@@ -122,12 +125,55 @@ namespace ByteFountain
 		if (xmlerr != XMLError::XML_SUCCESS)
 		{
 			std::ostringstream oss;
-			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.GetErrorStr1()<<std::endl;
+			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.ErrorStr()<<std::endl;
 			err_msg=oss.str();
-			
-			return nzb();		
+			return nzb();
 		}
-		return loadnzb(nzbfile,doc,err_msg);
+		return loadnzb(location,doc,err_msg);
 	}
+/*
+	nzb loadnzb_from_uri(const std::string& location, const uri::uri& nzburi, std::string& err_msg)
+	{
+		try
+		{
+			http::client client;
+			http::client::request request(nzburi);
+			http::client::response response = client.get(request);
 
+			std::string strdoc(static_cast<std::string>(body(response)));
+			XMLDocument doc;
+			auto xmlerr = doc.Parse(strdoc.c_str());
+			if (xmlerr != XMLError::XML_SUCCESS)
+			{
+				std::ostringstream oss;
+				oss<<"Could not parse file at : "<<location<<", error is: "<<doc.GetErrorStr1()<<std::endl;
+				err_msg=oss.str();
+
+				return nzb();
+			}
+
+			return loadnzb(location,doc,err_msg);
+		}
+		catch (std::exception &e) 
+		{
+			err_msg = e.what();
+		}
+	}
+*/
+
+	nzb loadnzb(const std::string& location, std::string& err_msg)
+	{
+//		uri::uri nzburi(location);
+
+//		if (nzburi.is_valid())
+//		{
+//			return loadnzb_from_uri(location,nzburi,err_msg);
+//		}
+
+		boost::filesystem::path nzbfile(location);
+		return loadnzb_from_file(location,nzbfile,err_msg);
+	}
 }
+
+
+
