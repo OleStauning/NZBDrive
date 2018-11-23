@@ -78,14 +78,6 @@ namespace ByteFountain
 	{
 		m_pImpl->SetLoggingLevel(level);
 	}
-	void NZBDrive::SetCachePath(const boost::filesystem::path& cache_path)
-	{
-		m_pImpl->SetCachePath(cache_path);;
-	}
-	boost::filesystem::path NZBDrive::GetCachePath() const
-	{
-		return m_pImpl->GetCachePath();
-	}
 	void NZBDrive::SetNetworkThrottling(const NetworkThrottling& shape)
 	{
 		m_pImpl->SetNetworkThrottling(shape);

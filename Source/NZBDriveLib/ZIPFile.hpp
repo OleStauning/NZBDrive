@@ -54,7 +54,6 @@ class ZIPFileFactory
 		std::string filename;
 		unsigned long long data_begin;
 		unsigned int next_header_signature;
-		std::shared_ptr<IDriveMounter> mounter;
 		IFile::CancelSignal* cancel;
 	};
 

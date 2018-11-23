@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <sstream>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -19,134 +18,9 @@
 
 namespace ByteFountain
 {
-	using namespace boost::interprocess;
 
-	struct fileregion
-	{
-		boost::interprocess::file_mapping& m_file;
-		boost::interprocess::mapped_region m_region;
-		char* m_cursorBegin;
-		char* m_cursor;
-		char* m_cursorEnd;
-		fileregion(boost::interprocess::file_mapping& file, const boost::interprocess::mode_t mode, 
-			const unsigned long long offset, const std::size_t size) :
-			m_file(file),m_region(file,mode,offset,size),m_cursorBegin((char*)m_region.get_address()),
-			m_cursor(m_cursorBegin),m_cursorEnd(m_cursor+size)
-		{
-//			std::cout<<m_file.get_name()<<"->Open(["<<offset<<","<<offset+size<<"[) : ["<<(size_t)m_cursorBegin<<","<<(size_t)m_cursorEnd<<"["<<std::endl;			
-		}
-		~fileregion()
-		{
-//			std::cout<<m_file.get_name()<<"->Close(["<<(size_t)m_cursorBegin<<","<<(size_t)m_cursorEnd<<"[)"<<std::endl;			
-		}
-		std::size_t WriteToCursor(void* buf, const std::size_t size)
-		{
-//			std::cout<<m_file.get_name()<<"->WriteToCursor("<<(size_t)m_cursor<<","<<size<<")"<<std::endl;
-
-			if (m_cursor+size>m_cursorEnd)
-			{
-				memcpy((void*)m_cursor, buf, m_cursorEnd - m_cursor);
-				m_cursor = m_cursorEnd;
-				return m_cursorEnd - m_cursor;
-//				std::ostringstream oss;
-//				oss << "Writing " << (m_cursor + size) - m_cursorEnd << " bytes past end of memory mapped file, reading-size= "
-//					<<size<<", filesize="<<m_cursorEnd-m_cursorBegin;
-//				throw std::invalid_argument(oss.str());
-			}
-			memcpy((void*)m_cursor,buf,size);
-			m_cursor+=size;
-			return size;
-		}
-		std::size_t ReadFromCursor(void* buf, const std::size_t size)
-		{
-//			std::cout<<m_file.get_name()<<"->ReadFromCursor("<<(size_t)buf<<","<<size<<")"<<std::endl;
-
-			if (m_cursor+size>m_cursorEnd)
-			{
-				memcpy(buf, (void*)m_cursor, m_cursorEnd - m_cursor);
-				return m_cursorEnd - m_cursor;
-//				std::ostringstream oss;
-//				oss << "Reading "<<m_cursorEnd-(m_cursor+size)<<" bytes past end of memory mapped file (reading-offset= "
-//					<<m_cursor-m_cursorBegin<<" reading-size= "<<size<<" filesize="<<m_cursorEnd-m_cursorBegin<<")";
-			}
-			memcpy(buf,(void*)m_cursor,size);
-			return size;
-		}
-	};
-
+	yDecoder::Callbacks::~Callbacks(){}
 	
-	void yCacheFile::AllocateCacheFile(const std::string& path, const unsigned long long size)
-	{
-		m_path=path;
-		try
-		{
-			std::filebuf fbuf;
-			fbuf.open(m_path, std::ios_base::in | std::ios_base::out 
-						| std::ios_base::trunc | std::ios_base::binary);
-
-			//  Preallocate file of size:
-			auto actual = fbuf.pubseekoff(size - 1, std::ios_base::beg);
-			if (std::char_traits<char>::eof() != fbuf.sputc(0)) actual += std::streamoff(1);
-
-			// For some reason "actual==size" even when filesystem is full....
-
-			fbuf.close();
-
-			if (size != boost::filesystem::file_size(path))
-			{
-				throw std::runtime_error("Cache file truncated.");
-			}
-
-			
-			m_file=file_mapping(m_path.c_str(),read_write);
-		}
-		catch(std::exception &ex)
-		{
-			boost::filesystem::remove(m_path);
-			std::ostringstream err;
-			err<<"Unable to allocate cachefile: \""<<path<<"\" of size "<<size<<".\n"
-				<<"Check for full disk and you have read-write-create access to the directory. "
-				<<ex.what();
-			throw std::runtime_error(err.str());
-		}
-	}
-	void yCacheFile::OpenCacheFileForWrite(const unsigned long long offset, const std::size_t size, yCacheFileHandle& cacheFile)
-	{
-		try
-		{
-			cacheFile.reset(new fileregion(m_file,read_write,offset,size));
-		}
-		catch(std::exception &ex)
-		{
-			std::ostringstream err;
-			err<<"Unable to open cachefile: \""<<m_path<<"\":\n"<<ex.what();
-			throw std::runtime_error(err.str());
-		}
-	}
-	void yCacheFile::CloseCacheFile(yCacheFileHandle& cacheFile)
-	{
-		cacheFile.reset();
-	}
-	std::size_t yCacheFile::WriteToCacheFile(const unsigned char* buf, const std::size_t size, yCacheFileHandle& cacheFile)
-	{
-		return cacheFile? cacheFile->WriteToCursor((void*)buf,size) : 0;
-	}
-	std::size_t yCacheFile::ReadFromCacheFile(char* buf, const unsigned long long offset, const std::size_t size)
-	{
-		fileregion region(m_file,read_only,offset,size);
-		return region.ReadFromCursor((void*)buf,size);
-	}
-
-	yCacheFile::yCacheFile(){}
-	yCacheFile::~yCacheFile()
-	{
-		if (m_path.size()>0 && !file_mapping::remove(m_path.c_str()))
-		{
-			std::cout<<"Failed to delete: \""<<m_path<<"\"";
-		}
-	}
-
-
 #pragma warning ( disable : 4351 )
 	yDecoder::yDecoder(Callbacks& callbacks):
 		m_callbacks(callbacks),
@@ -155,8 +29,7 @@ namespace ByteFountain
 		m_decodingState(ExpectingBegin),
 		m_bytesDecoded(0),
 		m_ybuf(),
-		m_nbuf(0),
-		m_binary_out(0)
+		m_nbuf(0)
 	{}
 #pragma warning ( default : 4351 )
 	
@@ -165,7 +38,7 @@ namespace ByteFountain
 	inline void yDecoder::Flush()
 	{
 		if (m_nbuf == 0) return;
-		yCacheFile::WriteToCacheFile(m_ybuf, m_nbuf, m_binary_out);
+		m_callbacks.OnData(m_ybuf, m_nbuf);
 		m_nbuf = 0;
 	}
 
@@ -236,13 +109,7 @@ namespace ByteFountain
 					m_beginInfo.name = p;
 					if (!m_beginInfo.multipart)
 					{
-						m_binary_out = m_callbacks.OnBeginSegment(m_beginInfo);
-						if (!m_binary_out)
-						{
-							m_callbacks.OnError("Error in =begin",FAILED);
-							m_decodingState=ErrorState;
-							return;
-						}
+						m_callbacks.OnBeginSegment(m_beginInfo);
 						m_decodingState=ExpectingEnd;
 					}
 					else
@@ -294,14 +161,7 @@ namespace ByteFountain
 						return;	
 					}
 					
-					m_binary_out = m_callbacks.OnBeginSegment(m_beginInfo,m_partInfo);
-
-					if (!m_binary_out)
-					{
-						m_callbacks.OnError("Error in =part",FAILED);
-						m_decodingState=ErrorState;
-						return;
-					}
+					m_callbacks.OnBeginSegment(m_beginInfo,m_partInfo);
 					
 					m_decodingState=ExpectingEnd;
 				}

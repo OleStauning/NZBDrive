@@ -10,6 +10,7 @@
 #define NZBDRIVEMOUNTER_HPP
 
 #include "IDriveMounter.hpp"
+#include "NZBMountState.hpp"
 #include "NZBDrive.hpp"
 #include "SplitFile.hpp"
 #include "RARFile.hpp"
@@ -24,12 +25,12 @@ namespace ByteFountain
 
 	struct NZBDriveMounter : public IDriveMounter, std::enable_shared_from_this<NZBDriveMounter> 
 	{
-		typedef boost::signals2::signal<void()> CancelSignal;
-		enum State { Mounting, Mounted, Canceling };
-		State state;
+		NZBMountState& mstate;
+		NZBMountState::State& state;
+		NZBMountState::CancelSignal& cancel;
+		int32_t nzbID;
 		NZBDriveIMPL& drive;
 		Logger& logger;
-		int32_t nzbID;
 		const boost::filesystem::path mountdir;
 		MountStatusFunction mountStatusFunction;
 		SplitFileFactory split_file_factory;
@@ -38,19 +39,19 @@ namespace ByteFountain
 		bool finalizing;
 		int parts_loaded;
 		int parts_total;
-		CancelSignal cancel;
 		FileErrorFlags errors;
 		bool extract_archives;
+		std::shared_ptr<NZBDriveMounter> m_keep_this_alive;
 		
-		NZBDriveMounter(NZBDriveIMPL& drv, const bool extract_archives,
-			const int32_t id, const boost::filesystem::path& dir, 
+		NZBDriveMounter(NZBMountState& mount_state,
+			NZBDriveIMPL& drv, const bool extract_archives, 
+			const boost::filesystem::path& dir, 
 			Logger& log, MountStatusFunction handler);
 		~NZBDriveMounter();
 		void StopInsertFile();
 		void RawInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir);
 		void StartInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir);
-		std::shared_ptr<IDriveMounter> GetSharedPtr();
-		void Cancel();
+//		std::shared_ptr<IDriveMounter> GetSharedPtr();
 	};
 	
 }

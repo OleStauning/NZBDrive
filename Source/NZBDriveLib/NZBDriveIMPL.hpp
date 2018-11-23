@@ -18,6 +18,8 @@
 #include "nzb_fileloader.hpp"
 #include "Logger.hpp"
 #include "ReadAheadFile.hpp"
+#include "NZBMountState.hpp"
+#include "SegmentCache.hpp"
 
 #include <thread>
 
@@ -38,7 +40,7 @@ namespace ByteFountain
 		static const int64_t ms_timeout = 15 * 60 * 1000;
 	private:
 
-		enum State { Stopped, Timeout, Started };
+		enum State { Stopped, Started, Stopping };
 
 		Logger m_defaultLogger;
 		Logger& m_logger;
@@ -48,7 +50,7 @@ namespace ByteFountain
 
 		typedef boost::signals2::signal<void()> CancelSignal;
 
-		typedef std::map< const boost::filesystem::path, std::shared_ptr<NZBDriveMounter> > MountStates;
+		typedef std::map< const boost::filesystem::path, NZBMountState > MountStates;
 		MountStates m_mountStates;
 
 		friend struct NZBDriveMounter;
@@ -62,7 +64,7 @@ namespace ByteFountain
 		std::unique_ptr<boost::asio::io_service::work> m_work;
 
 		boost::filesystem::path m_cache_path;
-
+		SegmentCache m_segment_cache;
 		std::shared_ptr<NZBDirectory> m_root_dir;
 		std::shared_ptr<NZBDirectory> m_root_rawdir;
 
@@ -70,7 +72,6 @@ namespace ByteFountain
 		time_duration m_duration;
 
 		void HeartBeat(const boost::system::error_code& e);
-		void MyTrialTimeout();
 
 		Logger& m_log;
 		std::atomic<int32_t> m_nzbCount;
@@ -117,10 +118,10 @@ namespace ByteFountain
 
 		RateLimiter::Parameters GetRateLimiterConfiguration();
 
-		int32_t Mount(const int32_t mountID, const boost::filesystem::path& expanded_cache_path, 
-			const boost::filesystem::path& mountdir, const nzb& nzb, 
+		int32_t Mount(const int32_t mountID, const boost::filesystem::path& mountdir, const nzb& nzb, 
 			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
-		NZBDriveIMPL::MountStates::iterator Unmount(const NZBDriveIMPL::MountStates::iterator& it_state);
+		NZBDriveIMPL::MountStates::iterator Unmount(const boost::filesystem::path& mountdir,
+			const NZBDriveIMPL::MountStates::iterator& it_state);
 
 	protected:
 
@@ -147,9 +148,6 @@ namespace ByteFountain
 		void SetFileRemovedHandler(NZBFileRemovedFunction fileRemovedFunction);
 
 		void SetLoggingLevel(const LogLineLevel level);
-
-		void SetCachePath(const boost::filesystem::path& cache_path);
-		boost::filesystem::path GetCachePath() const;
 
 		void SetNetworkThrottling(const NetworkThrottling& shape) { m_shape = shape; }
 

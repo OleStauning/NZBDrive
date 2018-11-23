@@ -24,6 +24,7 @@ class Logger
 {
 	OnLogLine m_callback;
 	LogLineLevel m_level;
+	Logger(const Logger&) = delete;
 public:
 	Logger(std::ostream& ost, const LogLineLevel& level = LogLineLevel::Debug);
 	Logger(OnLogLine callback, const LogLineLevel& level = LogLineLevel::Debug);

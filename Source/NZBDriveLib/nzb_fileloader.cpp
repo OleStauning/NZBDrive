@@ -13,13 +13,18 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
 
+#include <sstream>
+#include <iostream>
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
 
 namespace ByteFountain
 {
 	using namespace tinyxml2;
 //	using namespace boost::network;
 
-	nzb loadnzb(const std::string& nzbfile, XMLDocument& doc, std::string& err_msg)
+	nzb loadnzb(const std::string& nzbfile, XMLDocument& doc)
 	{
 
 		XMLHandle hDoc(&doc);
@@ -34,8 +39,7 @@ namespace ByteFountain
 			{
 				std::ostringstream oss;
 				oss<<"Invalid nzb file: "<<nzbfile<<std::endl;
-				err_msg=oss.str();
-				return nzb();
+				throw std::invalid_argument(oss.str());
 			}
 			// save this for later
 			hRoot=XMLHandle(pElem);
@@ -48,8 +52,7 @@ namespace ByteFountain
 		{
 			std::ostringstream oss;
 			oss<<"Invalid nzb file (no file-tag): "<<nzbfile<<std::endl;
-			err_msg=oss.str();
-			return nzb;
+			throw std::invalid_argument(oss.str());
 		}
 		size_t nfiles=0;
 		for(/*nothing*/; pElemFile; pElemFile=pElemFile->NextSiblingElement()) ++nfiles;
@@ -73,8 +76,7 @@ namespace ByteFountain
 			{
 				std::ostringstream oss;
 				oss<<"Invalid nzb file (no group-tag): "<<nzbfile<<std::endl;
-				err_msg=oss.str();
-				return nzb;
+				throw std::invalid_argument(oss.str());
 			}
 			for(/*nothing*/; pElemGroup; pElemGroup=pElemGroup->NextSiblingElement())
 			{
@@ -86,8 +88,7 @@ namespace ByteFountain
 			{
 				std::ostringstream oss;
 				oss<<"Invalid nzb file (no segment-tag): "<<nzbfile<<std::endl;
-				err_msg=oss.str();
-				return nzb;
+				throw std::invalid_argument(oss.str());
 			}
 			for(/*nothing*/; pElemSegment; pElemSegment=pElemSegment->NextSiblingElement())
 			{
@@ -105,20 +106,24 @@ namespace ByteFountain
 		return nzb;
 	}
 
-	nzb loadnzb_from_file(const std::string& location, const boost::filesystem::path& nzbfile, std::string& err_msg)
+	nzb loadnzb_from_file(const std::string& location, const boost::filesystem::path& nzbfile)
 	{
-		err_msg.clear();
 #ifdef _MSC_VER
 		FILE* file=0;
 		if (0!=_wfopen_s(&file,nzbfile.c_str(), L"rb"))
 		{
 			std::ostringstream oss;
 			oss<<"Could not find file: "<<nzbfile<<std::endl;
-			err_msg=oss.str();
-			return nzb();
+			throw std::invalid_argument(oss.str());
 		}
 #else
 		FILE* file = fopen(nzbfile.string().c_str(), "rb");
+		if (file==0)
+		{
+			std::ostringstream oss;
+			oss<<"Could not find file: "<<nzbfile<<std::endl;
+			throw std::invalid_argument(oss.str());
+		}
 #endif
 		XMLDocument doc;
 		auto xmlerr = doc.LoadFile(file);
@@ -126,52 +131,53 @@ namespace ByteFountain
 		{
 			std::ostringstream oss;
 			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.ErrorStr()<<std::endl;
-			err_msg=oss.str();
-			return nzb();
+			throw std::invalid_argument(oss.str());
 		}
-		return loadnzb(location,doc,err_msg);
+		return loadnzb(location,doc);
 	}
-/*
-	nzb loadnzb_from_uri(const std::string& location, const uri::uri& nzburi, std::string& err_msg)
+	nzb loadnzb_from_uri(const std::string& location)
 	{
-		try
+		curlpp::Cleanup myCleanup;
+		
+		curlpp::options::Url myUrl(location);
+		curlpp::Easy myRequest;
+		myRequest.setOpt(myUrl);
+		
+		std::ostringstream os;
+		curlpp::options::WriteStream ws(&os);
+		myRequest.setOpt(ws);
+		
+		myRequest.perform();
+
+		std::string strdoc(os.str());
+
+		XMLDocument doc;
+		auto xmlerr = doc.Parse(strdoc.c_str());
+		if (xmlerr != XMLError::XML_SUCCESS)
 		{
-			http::client client;
-			http::client::request request(nzburi);
-			http::client::response response = client.get(request);
-
-			std::string strdoc(static_cast<std::string>(body(response)));
-			XMLDocument doc;
-			auto xmlerr = doc.Parse(strdoc.c_str());
-			if (xmlerr != XMLError::XML_SUCCESS)
-			{
-				std::ostringstream oss;
-				oss<<"Could not parse file at : "<<location<<", error is: "<<doc.GetErrorStr1()<<std::endl;
-				err_msg=oss.str();
-
-				return nzb();
-			}
-
-			return loadnzb(location,doc,err_msg);
+			std::ostringstream oss;
+			oss<<"Could not parse file at : "<<location<<", error is: "<<doc.ErrorStr()<<std::endl;
+			throw std::invalid_argument(oss.str());
 		}
-		catch (std::exception &e) 
-		{
-			err_msg = e.what();
-		}
+
+		return loadnzb(location,doc);
 	}
-*/
 
-	nzb loadnzb(const std::string& location, std::string& err_msg)
+	nzb loadnzb(const std::string& location)
 	{
-//		uri::uri nzburi(location);
 
-//		if (nzburi.is_valid())
-//		{
-//			return loadnzb_from_uri(location,nzburi,err_msg);
-//		}
-
-		boost::filesystem::path nzbfile(location);
-		return loadnzb_from_file(location,nzbfile,err_msg);
+		if (
+			location.compare(0,7,"http://")==0 ||
+			location.compare(0,8,"https://")==0
+		)
+		{
+			return loadnzb_from_uri(location);
+		}
+		else
+		{
+			boost::filesystem::path nzbfile(location);
+			return loadnzb_from_file(location,nzbfile);
+		}
 	}
 }
 

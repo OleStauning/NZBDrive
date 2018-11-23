@@ -13,33 +13,10 @@
 #include <fstream>
 #include <string>
 
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
 #include <boost/filesystem.hpp>
-
-
 
 namespace ByteFountain
 {
-
-struct fileregion;	
-	
-typedef std::shared_ptr<fileregion> yCacheFileHandle;
-
-class yCacheFile
-{
-	std::string m_path;
-	boost::interprocess::file_mapping m_file;
-
-public:
-	yCacheFile();
-	~yCacheFile();
-	void AllocateCacheFile(const std::string& path, const unsigned long long size);
-	void OpenCacheFileForWrite(const unsigned long long offset, const std::size_t size, yCacheFileHandle& cacheFile);
-	void CloseCacheFile(yCacheFileHandle& cacheFile);
-	static std::size_t WriteToCacheFile(const unsigned char* buf, const std::size_t size, yCacheFileHandle& cacheFile);
-	std::size_t ReadFromCacheFile(char* buf, const unsigned long long offset, const std::size_t size);
-};
 
 class yDecoder
 {
@@ -58,9 +35,9 @@ public:
 		FAILED =  32/**< The decoding failed */
 	};
 
-	//=ybegin part=54 line=128 size=50000000 name=Thomas & Vennerne - Vi er sammen.Nordic.pal.dvdr.ByMig .part01.rar
 	struct yBeginInfo
 	{
+		yBeginInfo():multipart(false),part(0),line(0),size(0),name(){}
 		bool multipart;
 		unsigned long part;
 		unsigned long line;
@@ -68,16 +45,16 @@ public:
 		boost::filesystem::path name;
 	};
 
-	//=ypart begin=13228801 end=13478400
 	struct yPartInfo
 	{
+		yPartInfo():begin(0),end(0){}
 		unsigned long long begin;
 		unsigned long long end;
 	};
 
-	//=yend size=249600 part=54 pcrc32=77858f73
 	struct yEndInfo
 	{
+		yEndInfo():size(0),part(0),crc(0){}
 		unsigned long long size;
 		unsigned long part;
 		unsigned long crc;
@@ -88,12 +65,13 @@ public:
 	public:
 		/// Called when a new segment starts:
 		// the method should return an ostream that can be used to write the segment data. 
-		virtual yCacheFileHandle OnBeginSegment(const yBeginInfo& beginInfo, const yPartInfo& partInfo)=0;
-		virtual yCacheFileHandle OnBeginSegment(const yBeginInfo& beginInfo)=0;
+		virtual void OnBeginSegment(const yBeginInfo& beginInfo, const yPartInfo& partInfo)=0;
+		virtual void OnBeginSegment(const yBeginInfo& beginInfo)=0;
+		virtual void OnData(const unsigned char* buf, const std::size_t size)=0;
 		virtual void OnEndSegment(const yEndInfo& endInfo)=0;
 		virtual void OnError(const std::string& msg, const Status& status)=0;
 		virtual void OnWarning(const std::string& msg, const Status& status)=0;
-		virtual ~Callbacks(){}
+		virtual ~Callbacks()=0;
 	};
 
 	yDecoder(Callbacks& callbacks);
@@ -126,7 +104,6 @@ private:
 	unsigned char m_ybuf[YBUFSIZE];
 	std::string m_lineBuffer;
 	std::size_t m_nbuf;
-	yCacheFileHandle m_binary_out;
 	
 	void CrcAdd(int c);
 	const char* findAttribute(const std::string& line, const char* name);

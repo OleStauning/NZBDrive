@@ -115,6 +115,8 @@ namespace ByteFountain
 	}
 	void NZBDirectory::RegisterFile(const std::shared_ptr<IFile>& file, const filesystem::path& p)
 	{
+		std::cout<<"Registering file: "<<p<<std::endl;
+		
 		std::unique_lock<std::mutex> lock(m_root_mutex);
 		m_totalNumberOfBytes+=file->GetFileSize();
 		RegisterFile(file,p.begin());

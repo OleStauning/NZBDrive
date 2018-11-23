@@ -14,6 +14,8 @@
 #include <boost/algorithm/string.hpp>
 #include <functional>
 #include <fstream>
+#include <boost/filesystem.hpp>
+#include <queue>
 //#include <google/profiler.h>
 
 using namespace ByteFountain;
@@ -72,7 +74,6 @@ int main(int argc, char *argv[])
 	if (!boost::filesystem::exists(expand_user("~/.nzbmount/config")))
 	{
 		std::ofstream cf(expand_user("~/.nzbmount/config"));
-		cf<<"cache_path=/tmp"<<std::endl;
 		cf<<"cache_keep=no"<<std::endl;
 		cf<<"server=usenetserver.com"<<std::endl;
 		cf<<"user=username"<<std::endl;
@@ -89,8 +90,6 @@ int main(int argc, char *argv[])
 	
 	std::vector<UsenetServer> servers;
 
-	boost::filesystem::path cache_path="/tmp";
-	
 	LogLineLevel log_level = LogLineLevel::Debug;
 	
 	NetworkThrottling shape;;
@@ -114,16 +113,6 @@ int main(int argc, char *argv[])
 		boost::algorithm::trim(val);
 		if (param=="cache_path")
 		{
-			cache_path=expand_user(val);
-			if (!boost::filesystem::exists(cache_path))
-			{
-				boost::filesystem::create_directory(cache_path);
-				if (!boost::filesystem::exists(cache_path))
-				{
-					std::cout << "Could not create cache_path: "<<cache_path<<std::endl;
-					return 1;
-				}
-			}
 		}
 		else if (param=="cache_keep") ;
 		else if (param=="server" || parse_idx_param("server", param, idx))
@@ -216,14 +205,6 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 		}
-/*		
-		enum { Unlimited, Limited, AllignToReadRate } Mode = AllignToReadRate;
-		
-		unsigned long RateLimit = 0;		
-		unsigned long FastReadAhead = 10*1024*1024;
-		double DiskToNetworkFactor = 1.1;
-		unsigned long AdditionalNetworkRate = 1000;
-*/
 		
 		else if (param=="network_rate")
 		{
@@ -266,7 +247,7 @@ int main(int argc, char *argv[])
 
 	Logger log(std::cout,log_level);
 	
-	NZBFuseDrive drive(cache_path,log);
+	NZBFuseDrive drive(log);
 	drive.SetNetworkThrottling(shape);
 	
 	try
@@ -278,7 +259,9 @@ int main(int argc, char *argv[])
 		std::cout << "Failed to start nzbmounter: " << e.what() << std::endl;
 		return 1;
 	}
-
+	
+	std::function<void()> MountNext = nullptr;
+	
 	auto onMountStatus=[&](const int32_t nzbid, const int32_t parts_loaded, const int32_t parts_total)
 	{
 		int pct=100*parts_loaded/parts_total;
@@ -300,41 +283,60 @@ int main(int argc, char *argv[])
 				}
 				std::cout<<std::endl;
 			});
+			MountNext();
 		}
 	};
 
-	std::string nzbfile;
-
-	for(int i=2;i<argc;++i)
-	{
-		nzbfile=argv[i];
-		drive.Mount(nzbfile,nzbfile,onMountStatus,MountOptions::DontExtractArchives);
-	}
+	std::string invalid_chars = ":\\/";
 	
+	auto MountDir=[&invalid_chars](std::string s)
+	{
+		std::replace_if(s.begin(), s.end(), 
+                    [&invalid_chars](char c) { return invalid_chars.find(c)!=std::string::npos; }, '_');
+		return boost::filesystem::path(s);
+	};
+	
+	
+	std::queue<std::string> nzbqueue;
+
+	MountNext=[&]()
+	{
+		if (!nzbqueue.empty())
+		{
+			std::string nzbfile = nzbqueue.front();
+			nzbqueue.pop();
+			drive.Mount(MountDir(nzbfile),nzbfile,onMountStatus);
+		}
+	};
+
+	for(int i=2;i<argc;++i) nzbqueue.push(argv[i]);
+	MountNext();
 	
 	std::cout<<"Type NZB filename <enter> or quit <enter>"<<std::endl;
 
-//ProfilerStart("/home/stauning/Develop/nzbking/source/nzbmounter.prof");
-	
+	std::string nzbfile;
 	std::string input;
 	do
 	{
+		std::cin.clear();
 		getline (std::cin,input);
 		boost::trim(input);
-		if (input=="") break;
+		if (input=="") 
+		{
+			std::cout<<"Enter filename or url to mount or \"quit\" to quit."<<std::endl;
+			continue;
+		}
 		if (input=="quit") break;
 		if (input=="cancel") { drive.Unmount(boost::filesystem::path(nzbfile).stem()); continue; }
 		if (input=="dir")
 		{
-//			drive.GetRootDir()->Print(std::cout);
 			continue;
 		}
 		nzbfile=input;
-		drive.Mount(boost::filesystem::path(nzbfile).stem(),nzbfile,onMountStatus);
+		drive.Mount(MountDir(nzbfile),nzbfile,onMountStatus);
 	}
 	while(true);
 
-//ProfilerStop();
 	
 	std::cout<<"STOPPING...."<<std::endl;	
 	

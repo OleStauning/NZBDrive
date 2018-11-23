@@ -73,7 +73,6 @@ namespace
 		data->err=false;
 		data->path=path/filesystem::path(name).stem();
 		data->part=part;
-		data->mounter=m_mounter.GetSharedPtr();
 		data->cancel=&cancel;
 		GetZIPLocalFileHeader(data,file,0);
 		

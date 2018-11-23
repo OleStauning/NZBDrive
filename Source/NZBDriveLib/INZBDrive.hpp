@@ -131,9 +131,6 @@ namespace ByteFountain
 
 		virtual void SetLoggingLevel(const LogLineLevel level) = 0;
 
-		virtual void SetCachePath(const boost::filesystem::path& cache_path) = 0;
-		virtual boost::filesystem::path GetCachePath() const = 0;
-
 		virtual void SetNetworkThrottling(const NetworkThrottling& shape) = 0;
 
 		virtual int32_t AddServer(const UsenetServer& server) = 0;

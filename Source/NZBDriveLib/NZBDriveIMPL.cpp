@@ -93,6 +93,7 @@ namespace ByteFountain
 		m_thread(),
 		m_work(),
 		m_cache_path("~/NZBDriveCache"),
+		m_segment_cache(m_logger),
 		m_root_dir(new NZBDirectory()),
 		m_root_rawdir(new NZBDirectory()),
 		m_timer(m_io_service),
@@ -281,16 +282,6 @@ namespace ByteFountain
 		m_logger.SetLevel(level);
 	}
 
-	void NZBDriveIMPL::SetCachePath(const boost::filesystem::path& cache_path)
-	{
-		m_cache_path = cache_path;
-	}
-
-	boost::filesystem::path NZBDriveIMPL::GetCachePath() const
-	{
-		return m_cache_path;
-	}
-
 	int32_t NZBDriveIMPL::AddServer(const UsenetServer& server)
 	{
 		NewsServer srv;
@@ -323,8 +314,6 @@ namespace ByteFountain
 		m_event_work.reset(new boost::asio::io_service::work(m_event_io_service));
 		m_event_thread = std::thread([this](){ m_event_io_service.run(); });
 
-		HeartBeat(boost::system::error_code());
-
 		m_clients.SetWaitingQueueEmptyHandler(
 			[this]()
 		{
@@ -339,19 +328,32 @@ namespace ByteFountain
 		}
 		);
 
-
 		m_work.reset(new boost::asio::io_service::work(m_io_service));
-		m_thread = std::thread([this](){ m_io_service.run(); });
+		m_thread = std::thread([this]()
+		{ 
+			try
+			{
+				m_io_service.run(); 
+			}
+			catch(...)
+			{
+				m_log << Logger::Error << "IO Service run threw exception" << Logger::End;
+				throw;
+			}
+			m_log << Logger::Debug << "IO Service thread stopped" << Logger::End;
+		});
 
 		m_state = Started;
 
+		m_io_service.post([this](){ HeartBeat(boost::system::error_code()); });
+		
 		return true;
 	}
 
 
 	void NZBDriveIMPL::HeartBeat(const boost::system::error_code& e)
 	{
-		if (e != boost::asio::error::operation_aborted)
+		if (e != boost::asio::error::operation_aborted && m_state == Started)
 		{
 			//			std::shared_ptr<NZBDrive> me = shared_from_this();
 
@@ -374,24 +376,26 @@ namespace ByteFountain
 	{
 		std::unique_lock<std::mutex> lk(m_mutex);
 
-		if (m_state == Stopped) return;
+		if (m_state != Started) return;
 
+		m_state = Stopping;
+		
 		_Stop();
 
-		m_io_service.stop();
 		m_work.reset();
 		m_thread.join();
+		m_io_service.stop();
 	}
 
 	void NZBDriveIMPL::_Stop()
 	{
-		while (!m_mountStates.empty()) // Cancel all unfinished mounters.
+		
+		for(const auto& mountState : m_mountStates)
 		{
-			Unmount(m_mountStates.begin());
+			auto& cancel = mountState.second.cancel;
+			if (!cancel.empty()) cancel();
 		}
-
-		m_event_io_service.stop();
-
+		
 		m_limiter.Stop();
 		m_clients.Stop();
 		m_root_dir->Clear();
@@ -400,26 +404,33 @@ namespace ByteFountain
 		// Stop event-service:
 		m_event_work.reset();
 		m_event_thread.join();
+		m_event_io_service.stop();
 
 		m_state = Stopped;
 
 		ResetHandlers();
 	}
 
-	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const filesystem::path& expanded_cache_path, const filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		bool exctract_archives = (mountOptions & MountOptions::DontExtractArchives) == MountOptions::Default;
 		
-		auto drive_mounter = std::make_shared<NZBDriveMounter>(*this, exctract_archives, nzbID, mountdir, m_log, mountStatusFunction);
-
+		std::shared_ptr<NZBDriveMounter> drive_mounter;
+		
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
 
-			if (!m_mountStates.insert(std::pair<const boost::filesystem::path, std::shared_ptr<NZBDriveMounter>>(mountdir, drive_mounter)).second)
+			auto emplacePair = m_mountStates.emplace(mountdir, nzbID);
+
+			if (!emplacePair.second)
 			{
 				m_log << Logger::PopupError << "Mounting of " << mountdir << " failed. NZB file is already mounted." << Logger::End;
 				return MountErrorCode::MountingFailed;
 			}
+			
+			auto& mountState = emplacePair.first->second;
+			
+			drive_mounter = std::make_shared<NZBDriveMounter>(mountState, *this, exctract_archives, mountdir, m_log, mountStatusFunction);
 		}
 
 		SendEvent(m_nzbFileOpenFunction, nzbID, mountdir);
@@ -429,17 +440,22 @@ namespace ByteFountain
 			int32_t fileID = m_fileCount++;
 
 			std::shared_ptr<NZBFile> file(
-				new NZBFile(m_io_service, nzbID, fileID, nzbfile, m_clients, expanded_cache_path, m_log,
+				new NZBFile(m_io_service, nzbID, fileID, nzbfile, m_clients, m_segment_cache, m_log,
 				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction)
 				);
 
 			drive_mounter->parts_total++;
+
+//			m_log << Logger::Info << "AsyncGetFilename Called: " << file << Logger::End;
+			
 			file->AsyncGetFilename(
-				[file, drive_mounter, nzbID, mountdir, this](const boost::filesystem::path& filename)
+				[file, drive_mounter, mountdir, this](const boost::filesystem::path& filename)
 			{
-				if (0 != ((int)file->GetErrorFlags() & (int)FileErrorFlag::CacheFileError))
+//				m_log << Logger::Info << "AsyncGetFilename Returns: " << file << Logger::End;
+
+				if (0 != ((FileErrorFlags)file->GetErrorFlags() & (FileErrorFlags)FileErrorFlag::CacheFileError))
 				{
-					if (drive_mounter->state == NZBDriveMounter::Mounting)
+					if (drive_mounter->state == NZBMountState::Mounting)
 					{
 						m_log << Logger::PopupError << "Failed to allocate cache-file. Mounting of " << mountdir << " will not succeed.\nPlease free some disk-space and try again." << Logger::End;
 //						Unmount(mountdir);
@@ -476,9 +492,10 @@ namespace ByteFountain
 					drive_mounter->StartInsertFile(file, drive_mounter->mountdir);
 				}
 				drive_mounter->StopInsertFile();
-			},
-				&drive_mounter->cancel
-				);
+				
+//				m_log << Logger::Info <<  drive_mounter.use_count() << Logger::End;
+			}, 
+			&drive_mounter->cancel);
 		}
 
 		return nzbID;
@@ -487,17 +504,16 @@ namespace ByteFountain
 	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
 		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
-		std::string err_msg;
-
-		nzb mountfile = loadnzb(nzbfile, err_msg);
-
-		if (err_msg.size()>0)
+		try
 		{
-			m_log << Logger::PopupError << err_msg << Logger::End;
+			nzb mountfile = loadnzb(nzbfile);
+			return Mount(mountdir,nzbfile,mountfile,mountStatusFunction, mountOptions);
+		}
+		catch(const std::exception& e)
+		{
+			m_log << Logger::PopupError << e.what() << Logger::End;
 			return MountErrorCode::LoadNZBFileError;
 		}
-        
-        return Mount(mountdir,nzbfile,mountfile,mountStatusFunction, mountOptions);
     }
 	
 	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
@@ -506,39 +522,6 @@ namespace ByteFountain
 		if (m_state != Started) return MountErrorCode::MountingFailed;
 
 		int32_t nzbID = m_nzbCount++;
-
-
-		boost::filesystem::path expanded_cache_path;
-
-		expanded_cache_path = m_cache_path;
-
-		if (expanded_cache_path.empty())
-		{
-			m_log << ByteFountain::Logger::PopupError << "Invalid cache path" << ByteFountain::Logger::End;
-			return MountErrorCode::InvalidCacheDir;
-		}
-		if (!expand_user(expanded_cache_path))
-		{
-			m_log << ByteFountain::Logger::PopupError << "Invalid cache path" << ByteFountain::Logger::End;
-			return MountErrorCode::InvalidCacheDir;
-		}
-		if (!boost::filesystem::is_directory(expanded_cache_path))
-		{
-			bool ok = false;
-			try
-			{
-				ok = boost::filesystem::create_directory(expanded_cache_path);
-			}
-			catch (const boost::filesystem::filesystem_error& e)
-			{
-				m_log << ByteFountain::Logger::PopupError << "Cannot create cache path: " << expanded_cache_path << ByteFountain::Logger::End;
-				m_log << ByteFountain::Logger::Debug << e.what() << ByteFountain::Logger::End;
-			}
-			if (!ok)
-			{
-				return MountErrorCode::InvalidCacheDir;
-			}
-		}
 
 		if (!Validate(mountfile))
 		{
@@ -552,45 +535,34 @@ namespace ByteFountain
 
 		boost::uintmax_t nzbbytes = Bytes(mountfile);
 
-		boost::filesystem::space_info sinfo = boost::filesystem::space(expanded_cache_path);
-
-		if (nzbbytes>sinfo.available)
-		{
-            if (nzbfile.empty())
-                m_log << Logger::PopupError << "Not enough space in cache directory to mount nzb-file" << Logger::End;
-            else
-                m_log << Logger::PopupError << "Not enough space in cache directory to mount nzb-file: " << nzbfile << Logger::End;
-            
-			return MountErrorCode::CacheDirFullError;
-		}
-
-		return Mount(nzbID, expanded_cache_path, mountdir, mountfile, mountStatusFunction, mountOptions);
+		return Mount(nzbID, mountdir, mountfile, mountStatusFunction, mountOptions);
 	}
 
-	NZBDriveIMPL::MountStates::iterator NZBDriveIMPL::Unmount(const MountStates::iterator& it_state)
+	NZBDriveIMPL::MountStates::iterator NZBDriveIMPL::Unmount(const filesystem::path& mountdir, const MountStates::iterator& it_state)
 	{
 		if (it_state != m_mountStates.end())
 		{
-			std::shared_ptr<NZBDriveMounter>& mounter = it_state->second;
+			NZBMountState& mstate = it_state->second;
 
-			if (it_state->second->state == NZBDriveMounter::Mounting)
+			if (mstate.state == NZBMountState::Mounting)
 			{
 				m_log << Logger::Info << "Canceling mount in progress..." << Logger::End;
-				mounter->Cancel();
+				auto& cancel = mstate.cancel;
+				if (!cancel.empty()) cancel();
 				m_log << Logger::Info << "Canceling done." << Logger::End;
 			}
 
-			m_root_dir->Unmount(mounter->mountdir);
-			m_root_rawdir->Unmount(mounter->mountdir);
+			m_root_dir->Unmount(mountdir);
+			m_root_rawdir->Unmount(mountdir);
 
 #ifdef _MSC_VER
 			std::atomic_store(&m_readAheadFile, std::shared_ptr<ReadAheadFile>(nullptr)); // In case we have unmounte the read-ahead-file
 #else
 			m_readAheadFile = std::shared_ptr<ReadAheadFile>(nullptr);
 #endif
-			m_log << Logger::Debug << "Unmount done " << mounter->mountdir << Logger::End;
+			m_log << Logger::Debug << "Unmount done " << mountdir << Logger::End;
 
-			SendEvent(m_nzbFileCloseFunction, mounter->nzbID);
+			SendEvent(m_nzbFileCloseFunction, mstate.nzbID);
 
 			return m_mountStates.erase(it_state);
 		}
@@ -607,8 +579,8 @@ namespace ByteFountain
 
 		if (itMountState != m_mountStates.end())
 		{
-			int32_t h = itMountState->second->nzbID;
-			Unmount(itMountState);
+			int32_t h = itMountState->second.nzbID;
+			Unmount(mountdir, itMountState);
 #ifdef _MSC_VER
 			std::atomic_store(&m_readAheadFile, std::shared_ptr<ReadAheadFile>(nullptr)); // In case we have unmounte the read-ahead-file
 #else

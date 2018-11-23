@@ -22,14 +22,17 @@ namespace ByteFountain
 		if (h) h(std::forward<TArgs>(args)...);
 	}
 
-	NZBDriveMounter::NZBDriveMounter(NZBDriveIMPL& drv, const bool extract_archives,
-		const int32_t id, const boost::filesystem::path& dir, Logger& log,
+	NZBDriveMounter::NZBDriveMounter(NZBMountState& mount_state,
+		NZBDriveIMPL& drv, const bool extract_archives,
+		const boost::filesystem::path& dir, Logger& log,
 		MountStatusFunction handler) :
-		state(Mounting),
+		mstate(mount_state),
+		state(mount_state.state),
+		cancel(mount_state.cancel),
+		nzbID(mount_state.nzbID),
 		drive(drv),
 		extract_archives(extract_archives),
 		logger(log),
-		nzbID(id),
 		mountdir(dir),
 		mountStatusFunction(handler),
 		split_file_factory(log,*this),
@@ -38,7 +41,6 @@ namespace ByteFountain
 		finalizing(false),
 		parts_loaded(0),
 		parts_total(0),
-		cancel(),
 		errors(0)
 	{
 		logger<<Logger::Debug<<"Mounting "<<mountdir<<Logger::End;
@@ -46,11 +48,13 @@ namespace ByteFountain
 		
 	NZBDriveMounter::~NZBDriveMounter()
 	{
-		logger<<Logger::Debug<<"Done mounting "<<mountdir<<Logger::End;
+		logger<<Logger::Info<<"Done mounting "<<mountdir<<Logger::End;
 	}
 
 	void NZBDriveMounter::StopInsertFile()
 	{
+		auto keep_this_alive = shared_from_this();
+			
 		parts_loaded++;
 
 		if (!finalizing && parts_loaded==parts_total)
@@ -61,11 +65,16 @@ namespace ByteFountain
 			rar_file_factory.Finalize();
 			zip_file_factory.Finalize();
 			finalizing=false;
-			state = Mounted;
+			state = NZBMountState::Mounted;
 		}
-		if (!finalizing && state != Canceling)
+		if (!finalizing && state != NZBMountState::Canceling)
 		{
 			SendEvent(mountStatusFunction, nzbID, parts_loaded, parts_total);
+		}
+		if (parts_loaded==parts_total)
+		{
+			mountStatusFunction = nullptr;
+			m_keep_this_alive.reset();
 		}
 	}
 
@@ -89,6 +98,8 @@ namespace ByteFountain
 
 	void NZBDriveMounter::StartInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir)
 	{ 
+		if (!m_keep_this_alive) m_keep_this_alive = shared_from_this();
+		
 		parts_total++;
 
 		boost::filesystem::path filename=file->GetFileName();
@@ -127,14 +138,14 @@ namespace ByteFountain
 			else
 			{
 				filepath=dir/filename;
-				logger<<Logger::Info<<"Mounting file: "<<filepath<<Logger::End;
+				logger<<Logger::Debug<<"Mounting file: "<<filepath<<Logger::End;
 			}
 
 			errors|=file->GetErrorFlags();
 
 			if (drive.m_root_dir->Exists(filepath))
 			{
-				logger<<Logger::Info<<"Already exists: "<<filepath<<Logger::End;
+				logger<<Logger::Debug<<"Already exists: "<<filepath<<Logger::End;
 			}
 			else
 			{
@@ -145,16 +156,10 @@ namespace ByteFountain
 			StopInsertFile();
 		}	
 	}
-
-	void NZBDriveMounter::Cancel()
-	{
-		state = Canceling;
-		cancel();
-	}
-		
+/*
 	std::shared_ptr<IDriveMounter> NZBDriveMounter::GetSharedPtr()
 	{
 		return shared_from_this();
 	}
-	
+*/	
 }

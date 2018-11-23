@@ -30,7 +30,7 @@ using namespace boost::xpressive;
 namespace
 {
 
-	typedef unsigned char    byte;   // unsigned 8 bits
+	typedef unsigned char byte;   // unsigned 8 bits
 	typedef wchar_t wchar;
 	typedef unsigned int uint;   // 32 bits or more
 
@@ -164,13 +164,11 @@ namespace
 		int part=0;
 		if (!GetRARFilenameAndPart(file,name,part)) return false;
 		
-		std::shared_ptr<rar_data> data(new rar_data());
+		auto data = std::make_shared<rar_data>();
 		data->err=FileErrorFlag::OK;
 		data->rawpath=path;
 		data->path=path/filesystem::path(name).stem();
 		data->part=part;
-//		data->m_mounter.StopInsertFile=m_mounter.StopInsertFile;
-		data->mounter=m_mounter.GetSharedPtr();
 		data->cancel=&cancel;
 		GetMarkHead(data,file,0);
 		
@@ -314,7 +312,7 @@ namespace
 					boost::filesystem::path rar_name=filepath.filename();
 					
 					std::pair<boost::filesystem::path,std::string> key(rar_path,rar_name.string());
-					std::shared_ptr<RARFile>& rarFile=m_rar_files[key];
+					std::shared_ptr<RARFile>& rarFile = m_rar_files[key];
 					if (rarFile.get()==0)
 					{
 						rarFile.reset(new RARFile(m_log,rar_path,rar_name.string(),data->file_head));

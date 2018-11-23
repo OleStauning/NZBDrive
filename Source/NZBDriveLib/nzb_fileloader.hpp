@@ -13,7 +13,7 @@
 namespace ByteFountain
 {
 	struct nzb;
-	nzb loadnzb(const std::string& location, std::string& err_msg);
+	nzb loadnzb(const std::string& location);
 }
 
 #endif

@@ -22,7 +22,7 @@ struct IDriveMounter
 		virtual void StopInsertFile()=0;
 		virtual void RawInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir)=0;
 		virtual void StartInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir)=0;
-		virtual std::shared_ptr<IDriveMounter> GetSharedPtr()=0;
+//		virtual std::shared_ptr<IDriveMounter> GetSharedPtr()=0;
 };
 
 }

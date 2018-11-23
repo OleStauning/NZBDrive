@@ -29,6 +29,11 @@ namespace ByteFountain
 				std::string message_id;
 				segment():number(0),bytes(0),message_id(){}
 				segment(const unsigned long n, const unsigned long b, const std::string& id):number(n),bytes(b),message_id(id){}
+				std::ostream& print(std::ostream& ost) const
+				{
+					ost<<"             "<<number<<" "<<bytes<<" "<<message_id<<std::endl;
+					return ost;
+				}
 			};
 			std::set<std::string> groups;
 			std::wstring poster;
@@ -51,8 +56,44 @@ namespace ByteFountain
 			
 			// Methods:
 			bool has_data() const { return !segments.empty(); }
+			
+			file():
+				groups(),
+				poster(),
+				date(),
+				bytes(),
+				segments(),
+				nzb_file_id(),
+				subject(),
+				filebase(),
+				fileext(),
+				filetype(),
+				segments_found(),
+				segments_total(),
+				name(),
+				size()
+			{}
+			std::ostream& print(std::ostream& ost) const
+			{
+				for(const auto& s : segments)
+				{
+					ost<<"     Segment:"<<std::endl;
+					s.print(ost);
+				}
+				return ost;
+			}
 		};
 		std::vector<file> files;
+		
+		std::ostream& print(std::ostream& ost) const
+		{
+			for(const auto& f : files)
+			{
+				ost<<"File:"<<std::endl;
+				f.print(ost);
+			}
+			return ost;
+		}
 	};
 	
 	struct nzb_ext : public nzb
@@ -69,7 +110,19 @@ namespace ByteFountain
 		std::wstring nfo;
 		bool has_pwinfo;
 		bool has_pw;
-		nzb_ext():parts_found(0),parts_total(0),has_pwinfo(false){}
+		nzb_ext():
+			date(0),
+			poster(),
+			subject(),
+			subject_pattern(),
+			bytes(),
+			parts_found(0),
+			parts_total(0),
+			filecount(),
+			nfo(),
+			has_pwinfo(false),
+			has_pw()
+		{}
 	};
 
 	inline bool Validate(const nzb& n)
@@ -99,7 +152,7 @@ namespace ByteFountain
 		}
 		return bytes;
 	}
-
+	
 }
 
 #endif

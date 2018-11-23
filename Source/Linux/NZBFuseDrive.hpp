@@ -14,6 +14,8 @@
 #include <boost/filesystem.hpp>
 #include <thread>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 
 struct fuse;
 struct fuse_chan;
@@ -28,11 +30,14 @@ class NZBFuseDrive : public NZBDrive
 	boost::filesystem::path m_cache_path;
 	std::string m_drivepath;
 	std::thread m_fuseThread;
+	bool m_fuseThreadRunning;
+	std::mutex m_fuseThreadRunningMutex;
+	std::condition_variable m_fuseThreadRunningConditionVariable;
 	Logger& m_log;
 	
 	void FusermountCmd();
 public:
-	NZBFuseDrive(const boost::filesystem::path& cache_path, Logger& log);
+	NZBFuseDrive(Logger& log);
 	void Start(const std::string& drivepath, const std::vector<UsenetServer>& servers);
 	virtual void Stop();
 	void StopNow();

@@ -59,14 +59,14 @@ class RARFileFactory
 		boost::filesystem::path filename;
 		std::string txtfilename;
 		unsigned long long data_begin;
-		std::shared_ptr<IDriveMounter> mounter;
 		IFile::CancelSignal* cancel;
 	};
+
+	bool GetRARFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part);
 
 public:
 	RARFileFactory(Logger& log, IDriveMounter& mounter);
 	
-	bool GetRARFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part);
 	bool AddFile(const boost::filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel);
 	
 	void GetMainHeader(std::shared_ptr<rar_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset);

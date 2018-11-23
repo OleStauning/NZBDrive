@@ -44,9 +44,6 @@ namespace ByteFountain
 
 		void SetLoggingLevel(const LogLineLevel level);
 
-		void SetCachePath(const boost::filesystem::path& cache_path);
-		boost::filesystem::path GetCachePath() const;
-
 		void SetNetworkThrottling(const NetworkThrottling& shape);
 
 		int32_t AddServer(const UsenetServer& server);

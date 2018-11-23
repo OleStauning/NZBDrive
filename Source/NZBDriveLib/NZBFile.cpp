@@ -28,13 +28,12 @@ static void SendEvent(T& handler, TArgs&&... args)
 	if (h) h(std::forward<TArgs>(args)...);
 }
 
-
 NZBFile::SegmentInfo::SegmentInfo():
-msgIDs(), has_ypart(false), ypart(), status(SegmentState::None)
+	status(SegmentState::None), msgIDs(), msgBytes(0), ypart(std::nullopt), end_boundary(0)
 {}
 	
 NZBFile::NZBFile(boost::asio::io_service& io_service, const int32_t nzbID, const int32_t fileID, 
-	const nzb::file& nzbfile, NewsClientCache& clients, const boost::filesystem::path& cache_path, Logger& log,
+	const nzb::file& nzbfile, NewsClientCache& clients, SegmentCache& segment_cache, Logger& log,
 	NZBFile::FileAddedFunction fileAddedFunction,
 	NZBFile::FileInfoFunction fileInfoFunction,
 	NZBFile::FileSegmentStateChangedFunction fileSegmentStateChangedFunction,
@@ -44,14 +43,12 @@ NZBFile::NZBFile(boost::asio::io_service& io_service, const int32_t nzbID, const
 	m_nzbID(nzbID),
 	m_fileID(fileID),
 	m_clients(clients),
-	m_cache_path(cache_path),
-	m_cache_diskfile(m_cache_path/boost::lexical_cast<std::string>(boost::uuids::random_generator()())),
-	m_cache_file(),
+	m_segment_cache(segment_cache),
 	m_groups(nzbfile.groups.begin(),nzbfile.groups.end()),
 	m_checked_segments(0),
 	m_missing_segments(0),
 	m_requested_segments(0),
-	m_hasBeginInfo(false),
+	m_beginInfo(std::nullopt),
 	m_log(log),
 	m_fileAddedFunction(fileAddedFunction),
 	m_fileInfoFunction(fileInfoFunction),
@@ -69,7 +66,7 @@ NZBFile::NZBFile(boost::asio::io_service& io_service, const int32_t nzbID, const
 			m_log<<Logger::Error<<"Invalid segment number "<<s.number<<" in NZB file with subject :"<<
 				text_tool::unicode_to_utf8(nzbfile.subject)<<Logger::End;
 			SetErrorFlag(FileErrorFlag::InvalidSegmentNumber);
-			continue;
+//			continue;
 		}
 		if(s.bytes<0)
 		{
@@ -89,7 +86,7 @@ NZBFile::NZBFile(boost::asio::io_service& io_service, const int32_t nzbID, const
 		if (m_segments.size()<s.number) m_segments.resize(s.number);
 		
 		m_segments[s.number-1].msgIDs.push_back(s.message_id);
-		m_segments[s.number-1].bytes=s.bytes; // TODO: Maybe redundant segments have different sizes??
+		m_segments[s.number-1].msgBytes=s.bytes; // TODO: Maybe redundant segments have different sizes??
 	}
 
 	uint64_t bytes = 0;
@@ -104,7 +101,7 @@ NZBFile::NZBFile(boost::asio::io_service& io_service, const int32_t nzbID, const
 			SetErrorFlag(FileErrorFlag::MissingSegment);
 		}
 
-		bytes += s.bytes;
+		bytes += s.msgBytes;
 	}
 
 	SendEvent(m_fileAddedFunction, m_nzbID, m_fileID, (int32_t)m_segments.size(), bytes);
@@ -116,48 +113,17 @@ NZBFile::~NZBFile()
 {
 	SendEvent(m_fileRemovedFunction, m_fileID);
 	
-//	m_log<<"~NZBFile"<<std::endl;
-
-//	std::cout<<"~NZBFile "<<m_decoders<<std::endl;
-
-	assert(m_decoders>=0);
 	assert(m_decoders==0);
-
-//	std::cout<<"REMOVING CACHE-FILE: "<<m_cache_diskfile<<std::endl;
-	/*
-	boost::filesystem::remove(m_cache_diskfile);
-
-	if (boost::filesystem::exists(m_cache_diskfile))
-	{
-		m_log<<Logger::Error<<"Could not remove cache file "<<m_cache_diskfile<<", file is locked??"<<Logger::End;
-	}
-	*/
 }
 
 
 bool NZBFile::SetBeginInfo(const yBeginInfo& beginInfo)	
 {
-	if (!m_hasBeginInfo)
+	if (!m_beginInfo)
 	{
-		m_hasBeginInfo=true;
 		m_beginInfo=beginInfo;
-//		m_beginInfo.name = text_tool::cp_to_utf8(text_tool::cp1252, m_beginInfo.name);
-//		boost::trim(m_beginInfo.name);
-		// Generate empty file:
-//		m_log<<Logger::Info<<"CREATING CACHE-FILE: "<<m_cache_diskfile<<Logger::End;
 
-		SendEvent(m_fileInfoFunction, m_fileID, m_beginInfo.name, m_beginInfo.size);
-
-		try
-		{
-			m_cache_file.AllocateCacheFile(m_cache_diskfile.string(),m_beginInfo.size);
-		}
-		catch(const std::exception& e)
-		{
-			// TODO: IN CASE WE CANNOT ALLOCATE THE FILE WE HAVE TO SKIP IT IN THE MOUNTING PROCESS.
-			m_log<<Logger::Error<<e.what()<<Logger::End;
-			SetErrorFlag(FileErrorFlag::CacheFileError);
-		}
+		SendEvent(m_fileInfoFunction, m_fileID, m_beginInfo->name, m_beginInfo->size);
 
 		UpdateVBegin();
 
@@ -176,13 +142,15 @@ void NZBFile::SetFileInfo(const std::size_t idx, const yBeginInfo& beginInfo, co
 		newfile=SetBeginInfo(beginInfo);
 
 		m_segments[idx].ypart = partInfo;
-		m_segments[idx].has_ypart = true;
 
 		m_cond.notify_all();
 	}
 	if (newfile)
 	{
-		for(auto req : m_filename_requests) m_io_service.post( std::bind(req->func,m_beginInfo.name) );
+		for(const auto& req : m_filename_requests) 
+		{
+			m_io_service.post( [func=req.func, name=m_beginInfo->name](){ func(name); } );
+		}
 		m_filename_requests.clear();
 	}
 }
@@ -196,11 +164,14 @@ void NZBFile::SetFileInfo(const yBeginInfo& beginInfo)
 
 		m_cond.notify_all();
 	}
-	for(auto req : m_filename_requests) m_io_service.post( std::bind(req->func,m_beginInfo.name) );
+	for(const auto& req : m_filename_requests)
+	{
+			m_io_service.post( [func=req.func, name=m_beginInfo->name](){ func(name); } );
+	}
 	m_filename_requests.clear();
 }
 
-void NZBFile::SetDownloadFinished(const std::size_t idx)
+void NZBFile::SetSegmentFinished(const std::size_t idx)
 {
 	SendEvent(m_fileSegmentStateChangedFunction, m_fileID, (int32_t)idx, SegmentState::HasData);
 
@@ -234,9 +205,12 @@ void NZBFile::SetDownloadFailed(const std::size_t idx, const FileErrorFlag reaso
 
 	m_cond.notify_all();
 
-	if (!m_hasBeginInfo)
+	if (!m_beginInfo)
 	{
-		for(auto req : m_filename_requests) m_io_service.post( std::bind(req->func,"") );
+		for(const auto& req : m_filename_requests) 
+		{
+			m_io_service.post( [func=req.func](){ func(""); } );
+		}
 		m_filename_requests.clear();
 	}
 }
@@ -246,79 +220,83 @@ NZBFile::MyDecoder::MyDecoder(std::shared_ptr<NZBFile> file, const std::size_t i
 	m_file(file),
 	m_decoder(*this),
 	m_idx(idx),
-	m_diskfile(0)
+	m_cached_segment(),
+	m_offset(0)
 {
 }
 NZBFile::MyDecoder::~MyDecoder()
 {
-	m_file->m_cache_file.CloseCacheFile(m_diskfile);
-	assert(m_diskfile==0);
+	m_cached_segment.reset();
 }
 
 void NZBFile::MyDecoder::Decode(const char* yenc_data, const std::size_t len) { m_decoder.ReadLine(yenc_data, len); }
 void NZBFile::MyDecoder::Reset() { m_decoder.Reset(); }
 
-yCacheFileHandle NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo, const yPartInfo& partInfo)
+void NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo, const yPartInfo& partInfo)
 {
 	m_state=NZBFile::MyDecoder::Begin;
 	m_file->SetFileInfo(m_idx,beginInfo,partInfo);
 
-	if (m_file->m_beginInfo.size != beginInfo.size)
+	if (m_file->m_beginInfo->size != beginInfo.size)
 	{
-		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo.name << "\"" << Logger::End;
+		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo->name << "\"" << Logger::End;
 	}
-	if (m_file->m_beginInfo.size < partInfo.end)
+	if (m_file->m_beginInfo->size < partInfo.end)
 	{
-		m_file->m_log<<Logger::Error<<"=ybegin size parameter less than =ypart end parameter: \"" << m_file->m_beginInfo.name << Logger::End;
-		
-
-		m_file->m_cache_file.CloseCacheFile(m_diskfile);
+		m_file->m_log<<Logger::Error<<"=ybegin size parameter less than =ypart end parameter: \"" << m_file->m_beginInfo->name << Logger::End;
 	}
 	else
 	{
-		m_file->m_log<<Logger::Info<<"BeginSegment: "<<m_idx<<" "<<partInfo.begin-1<<"-"<<partInfo.end-1<<" "<<m_file->m_beginInfo.name<<Logger::End;
+		m_file->m_log<<Logger::Info<<"BeginSegment: "<<m_idx<<" "<<partInfo.begin-1<<"-"<<partInfo.end-1<<" "<<m_file->m_beginInfo->name<<Logger::End;
 
-		if (m_state == NZBFile::MyDecoder::Canceled) return nullptr;
+		if (m_state == NZBFile::MyDecoder::Canceled) return;
 
-		m_file->m_cache_file.OpenCacheFileForWrite(partInfo.begin - 1, (std::size_t)(partInfo.end - partInfo.begin + 1), m_diskfile);
+		auto size = (std::size_t)(partInfo.end - partInfo.begin + 1);
+		m_cached_segment = m_file->m_segment_cache.Create(m_file->m_fileID, m_idx, size);
 	}
-
-	return m_diskfile;
 }
-yCacheFileHandle NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo)
+void NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo)
 {
 	m_state=NZBFile::MyDecoder::Begin;
 	m_file->SetFileInfo(beginInfo);
 
-	if (m_file->m_beginInfo.size != beginInfo.size)
+	if (m_file->m_beginInfo->size != beginInfo.size)
 	{
-		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo.name << "\"" << Logger::End;
+		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo->name << "\"" << Logger::End;
 	}
 		
-	m_file->m_log<<Logger::Info<<"BeginSegment: "<<m_idx<<" 0-"<<beginInfo.size-1<<" "<<m_file->m_beginInfo.name<<Logger::End;
+	m_file->m_log<<Logger::Debug<<"BeginSegment: "<<m_idx<<" 0-"<<beginInfo.size-1<<" "<<m_file->m_beginInfo->name<<Logger::End;
 
-	if (m_state == NZBFile::MyDecoder::Canceled) return nullptr;
+	if (m_state == NZBFile::MyDecoder::Canceled) return;
 
-	m_file->m_cache_file.OpenCacheFileForWrite(0, (std::size_t)(beginInfo.size), m_diskfile);
+	auto size = (std::size_t)(beginInfo.size);		
+	m_cached_segment = m_file->m_segment_cache.Create(m_file->m_fileID, m_idx, size);
+}
 
-	return m_diskfile;
+void NZBFile::MyDecoder::OnData(const unsigned char* buf, const std::size_t size)
+{
+	if (m_cached_segment) 
+	{
+		m_cached_segment->Write(buf,m_offset,size);
+		m_offset += size;
+	}
 }
 
 void NZBFile::MyDecoder::OnEndSegment(const yEndInfo& endInfo)
 {
 	m_state=NZBFile::MyDecoder::End;
-	m_file->m_log<<Logger::Info<<"EndSegment: "<<m_idx<<" "<<m_file->m_beginInfo.name<<Logger::End;
-	m_file->m_cache_file.CloseCacheFile(m_diskfile);
-	m_file->SetDownloadFinished(m_idx);
+	m_file->m_log<<Logger::Debug<<"EndSegment: "<<m_idx<<" "<<m_file->m_beginInfo->name<<Logger::End;
+	m_cached_segment.reset();
+	m_file->SetSegmentFinished(m_idx);
 }
 
 void NZBFile::MyDecoder::OnError(const std::string& msg, const Status& status)
 {
 	m_state=NZBFile::MyDecoder::Error;
 	std::ostringstream errmsg;
-	errmsg<<"ErrorInSegment: "<<m_idx<<" : "<<msg;
+	errmsg<<"ErrorInSegment: "<<m_idx+1<<" : "<<msg;
 	m_file->m_log<<Logger::Error<<errmsg.str()<<Logger::End;
-	m_file->m_cache_file.CloseCacheFile(m_diskfile);
+	m_cached_segment.reset();
 	m_file->SetDownloadFailed(m_idx, FileErrorFlag::ErrorInSegment);
 }
 
@@ -392,7 +370,7 @@ void NZBFile::OnStatResponse(const unsigned long idx, const bool have)
 	if (!have)
 	{
 		std::ostringstream errmsg;
-		errmsg<<"CouldNoFindSegment: "<<idx+1;
+		errmsg<<"CouldNoFindSegment: "<<idx;
 		m_log<<Logger::Error<<errmsg.str()<<Logger::End;
 
 		m_missing_segments++;
@@ -405,11 +383,24 @@ bool NZBFile::Preload(const bool pre_check_segments, CancelSignal* cancel)
 	for(unsigned long idx=0;idx<m_segments.size();++idx)
 	{
 		NZBFile::SegmentInfo& info(m_segments[idx]);
+		
+		if (!info.msgIDs.empty() && !ReadSegment(idx,cancel,true)) break;
+		
+		if (idx==m_segments.size()-1)
+		{
+			m_log<<Logger::Error<<"No valid segments in file, preload failed"<<Logger::End;
+			return true;
+		}
+	}	
+	
+	for(unsigned long idx=0;idx<m_segments.size();++idx)
+	{
+		NZBFile::SegmentInfo& info(m_segments[idx]);
 
 		if (info.msgIDs.empty())
 		{
 			std::ostringstream errmsg;
-			errmsg<<"Broken NZB-file: Missing segment number "<<idx+1<<" in NZB-file";
+			errmsg<<"Broken NZB-file: Missing segment number "<<idx<<" in NZB-file";
 			m_log<<Logger::Error<<errmsg.str()<<Logger::End;
 
 			m_segments[idx].status = SegmentState::DownloadFailed;
@@ -428,11 +419,6 @@ bool NZBFile::Preload(const bool pre_check_segments, CancelSignal* cancel)
 					[this,idx](const bool found){OnStatResponse(idx,found);});
 		}
 		
-		if (idx==0 && ReadSegment(idx,cancel,true))
-		{
-			SetDownloadFailed(idx, FileErrorFlag::OK); // Error would be set elsewhere.
-			return true;
-		}
 		
 	}
 
@@ -447,48 +433,33 @@ bool NZBFile::ReadSegment(const std::size_t idx, CancelSignal* cancel, const boo
 
 	NZBFile::SegmentInfo& info(m_segments[idx]);
 	
-	if (info.status == SegmentState::None)
+	if (info.msgIDs.empty())
 	{
-		SendEvent(m_fileSegmentStateChangedFunction, m_fileID, (int32_t)idx, SegmentState::Loading);
-
-		info.status = SegmentState::Loading;
-		// If shared_from_this fails in the following line, it is propably because this object
-		// needs to have a shared_ptr pointing to it...
-		std::shared_ptr<MyArticleDecoder> decoder(new MyArticleDecoder(shared_from_this(), idx, cancel));
-		if (cancel)
-			m_clients.GetArticleStream(m_groups, info.msgIDs, decoder, *cancel, priority);
-		else
-			m_clients.GetArticleStream(m_groups, info.msgIDs, decoder, priority);
-
-		return false;
+		m_log<<Logger::Error<<"No message-ID's in Segment "<<idx<<", skipping"<<Logger::End;
+		return true;
 	}
+	
+	SendEvent(m_fileSegmentStateChangedFunction, m_fileID, (int32_t)idx, SegmentState::Loading);
 
-	return info.status != SegmentState::HasData; // returns true on errors
+	info.status = SegmentState::Loading;
+
+	auto decoder = std::make_shared<MyArticleDecoder>(shared_from_this(), idx, cancel);
+	if (cancel)
+		m_clients.GetArticleStream(m_groups, info.msgIDs, decoder, *cancel, priority);
+	else
+		m_clients.GetArticleStream(m_groups, info.msgIDs, decoder, priority);
+
+	return false;
 }
 
-/*
-bool NZBFile::AssertBeginInfo()
-{
-	std::unique_lock<std::mutex> lock(m_mutex);
-
-	while(!m_hasBeginInfo && !m_segments[0].has_error)
-	{
-		if (ReadSegment(0)) return true;
-		m_cond.wait(lock);
-	}
-	return m_segments[0].has_error;
-}
-*/
 boost::filesystem::path NZBFile::GetFileName()
 {
-//	if (AssertBeginInfo()) return "ERROR";
-	return m_beginInfo.name;	
+	return m_beginInfo ? m_beginInfo->name : "ERROR";
 }
 
 unsigned long long NZBFile::GetFileSize()
 {
-//	if (AssertBeginInfo()) return 0;
-	return m_beginInfo.size;
+	return m_beginInfo ? m_beginInfo->size : 0;
 }
 
 
@@ -497,29 +468,24 @@ void NZBFile::UpdateVBegin()
 	static const double f=0.97;
 	unsigned long long begin=0;
 	
-	for(unsigned long idx=0;idx<m_segments.size();++idx)
+	for(auto& info : m_segments)
 	{
-		NZBFile::SegmentInfo& info(m_segments[idx]);
-
-		if (info.has_ypart)
+		if (info.ypart)
 		{
-			info.end_boundary=info.ypart.end;
-//			m_seg_boundaries[idx]=info.ypart.begin-1;
-			begin=info.ypart.end;
+			info.end_boundary=info.ypart->end;
+			begin=info.ypart->end;
 		}
 		else
 		{
-			begin+=(long)(f*info.bytes);
+			begin+=(long)(f*info.msgBytes);
 			info.end_boundary=begin;
 		}
 	}
 	
 }
 
-std::pair<std::size_t, std::size_t> NZBFile::FindSegmentIdxRange(const unsigned long long begin, const unsigned long long end)
+std::tuple<std::size_t, std::size_t> NZBFile::FindSegmentIdxRange(const unsigned long long begin, const unsigned long long end)
 {
-	std::pair<std::size_t, std::size_t> res;
-
 	std::size_t lb, ub, m;
 	
 	lb=0;
@@ -531,8 +497,6 @@ std::pair<std::size_t, std::size_t> NZBFile::FindSegmentIdxRange(const unsigned 
 		if (begin<m_segments[m].end_boundary) ub=m; else lb=m;
 	}
 
-	res.first = lb;
-
 	ub=m_segments.size()-1;
 
 	while (ub-lb>1)
@@ -541,22 +505,22 @@ std::pair<std::size_t, std::size_t> NZBFile::FindSegmentIdxRange(const unsigned 
 		if (end<=m_segments[m].end_boundary) ub=m; else lb=m;
 	}
 
-	res.second = ub;
-
-	return res;
+	return {lb, ub};
 }
 
-std::size_t NZBFile::TryGetData(char* buf, const unsigned long long offset, const std::size_t size,
-	bool& err_occurred, CancelSignal* cancel, const bool priority)
+std::size_t NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf, 
+	const unsigned long long offset, const std::size_t size, bool& err_occurred, CancelSignal* cancel, const bool priority)
 {
 	unsigned long long begin=offset;
 	unsigned long long end=offset+size;
 
-	std::pair<std::size_t, std::size_t> range = FindSegmentIdxRange(begin, end);
+	const auto [lb, ub] = FindSegmentIdxRange(begin, end);
 	
-	bool ready=true;
-
-	for (std::size_t idx = range.first; idx <= range.second; ++idx)
+	bool ready = true;
+	std::size_t readsize = 0;
+	
+	
+	for (std::size_t idx = lb; idx <= ub; ++idx)
 	{
 		const NZBFile::SegmentInfo& info(m_segments[idx]);
 
@@ -564,16 +528,56 @@ std::size_t NZBFile::TryGetData(char* buf, const unsigned long long offset, cons
 		{
 		case SegmentState::None:
 			err_occurred |= ReadSegment(idx,cancel,priority);
-			// (Intentionally fall through)
+			ready = false;
+			continue;
+			
 		case SegmentState::Loading:
 			ready = false;
-			// (Intentionally fall through)
+			continue;
+			
 		case SegmentState::HasData:
+		{
+			auto seg_begin = info.ypart->begin-1;
+			auto seg_end = info.ypart->end;
+
+			if (offset>=seg_end || offset+size<seg_begin) continue;
+			
+			auto offset1 = seg_begin > offset ? seg_begin - offset : 0;
+			auto offset2 = offset > seg_begin ? offset - seg_begin : 0;
+			
+			auto buf2 = buf + offset1;
+			
+			auto size2 = std::min((unsigned long long)size - offset1, seg_end - std::max(seg_begin, offset));
+
+			if (done.find(idx)!=done.end())
+			{
+				readsize+=size2;
+				continue;
+			}
+
+			auto cached_segment = m_segment_cache.TryGet(m_fileID, idx);
+			
+			m_log << Logger::Info << "SegmentCache.TryGet("<<m_fileID<<", "<<idx<<"): "<<(cached_segment?"found":"not found")<<Logger::End;
+
+			if (!cached_segment)
+			{
+				err_occurred |= ReadSegment(idx,cancel,priority);
+				ready = false;
+				continue;
+			}
+			
+			cached_segment->Read(buf2, offset2, size2);
+			
+			readsize+=size2;
+			
+			done.insert(idx);
+
 			break;
+		}
 		default: // Error occurred:
 			{
 				std::ostringstream errmsg;
-				errmsg<<"Error: Missing segment "<<idx<<" when reading from file "<<m_beginInfo.name
+				errmsg<<"Error: Missing segment "<<idx+1<<" when reading from file "<<m_beginInfo->name
 					<<" ("<<SegmentInfo::Name(info.status)<<").";
 				SetErrorFlag(FileErrorFlag::OK); // Error reported elsewhere
 				m_log<<Logger::Error<<errmsg.str()<<Logger::End;
@@ -583,37 +587,43 @@ std::size_t NZBFile::TryGetData(char* buf, const unsigned long long offset, cons
 		}
 	}
 	
+	m_log<<Logger::Info<<"TryGetData: \""<< m_beginInfo->name <<
+		"\", segments [" << lb << ", " << ub << "], out of [0, "<<m_segments.size()<<"], found "<<
+		done.size()<<" segments; ready="<<(ready?"yes":"no")<<Logger::End;
+			
+
 	if (!ready) return 0;
 	
-	std::size_t readsize = size;
-	if (readsize>m_beginInfo.size - offset) readsize = (std::size_t)(m_beginInfo.size - offset);
-	
-	if (buf) readsize = m_cache_file.ReadFromCacheFile(buf, offset, readsize);
-
 	return readsize;
 }
 
 bool NZBFile::GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize)
 {
+	readsize = 0;
+	
+	if (size==0) return false;
+	
 	std::unique_lock<std::mutex> lock(m_mutex);
 
-	if (size==0 || offset>=m_beginInfo.size)
+	if (offset>=m_beginInfo->size)
 	{
-		m_log<<Logger::Debug<<"Failed Reading: "<<m_beginInfo.name<<", "<<offset<<"-"<<offset+size
+		m_log<<Logger::Debug<<"Failed Reading: "<<m_beginInfo->name<<", "<<offset<<"-"<<offset+size
 			<<" (past end)"<<Logger::End;
 		return false;
 	}
 	
-	m_log<<Logger::Debug<<"Start Reading: "<<m_beginInfo.name<<", "<<offset<<"-"<<offset+size<<Logger::End;
+	m_log<<Logger::Debug<<"Start Reading: "<<m_beginInfo->name<<", "<<offset<<"-"<<offset+size<<Logger::End;
 
 	bool err=false;
 	
-	while (0==(readsize=TryGetData(buf,offset,size,err)) && !err) 
+	std::unordered_set<std::size_t> done;
+	
+	while (0==(readsize=TryGetData(done,buf,offset,size,err)) && !err) 
 	{
 		m_cond.wait(lock);
 	}
 		
-	m_log<<Logger::Debug<<"Stop Reading: "<<m_beginInfo.name<<", "<<offset<<"-"<<offset+size
+	m_log<<Logger::Debug<<"Stop Reading: "<<m_beginInfo->name<<", "<<offset<<"-"<<offset+size
 		<<(err?" (failed)": "(succeeded)")<<Logger::End;
 
 	return err;
@@ -629,16 +639,18 @@ void NZBFile::AsyncGetFileData(OnDataFunction function, char* buf, const unsigne
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 		
+		std::unordered_set<std::size_t> done;
+		
 		if (size==0) ready=true;
-		else if (m_hasBeginInfo && offset>=m_beginInfo.size) ready=true;
-		else if (0 != (readsize = TryGetData(buf, offset, size, err, cancel, priority)) || err) ready = true;
+		else if (m_beginInfo && offset>=m_beginInfo->size) ready=true;
+		else if (0 != (readsize = TryGetData(done, buf, offset, size, err, cancel, priority)) || err) ready = true;
 	
 		if (!ready) 
 		{
 			uint_fast64_t id=++m_id_counter;
 			boost::signals2::connection conn;
 			if (cancel!=0) conn=cancel->connect(std::bind(&NZBFile::CancelAsyncGetFileData,shared_from_this(),id));
-			m_data_requests.emplace_back( new AsyncDataRequest( id, function, buf, offset, size, conn, priority ) );
+			m_data_requests.emplace_back( id, function, buf, offset, size, conn, priority, done );
 		}
 	}
 
@@ -650,7 +662,7 @@ void NZBFile::CancelAsyncGetFileData(const uint_fast64_t& id)
 	std::unique_lock<std::mutex> lock(m_mutex);
 	for(auto i=m_data_requests.begin();i!=m_data_requests.end();++i)
 	{
-		if ((*i)->id==id)
+		if (i->id==id)
 		{
 			m_data_requests.erase(i);
 			return;
@@ -662,22 +674,22 @@ void NZBFile::CancelAsyncGetFileData(const uint_fast64_t& id)
 
 void NZBFile::ProcessAsyncDataRequests()
 {
-	std::list< std::pair< std::shared_ptr<AsyncDataRequest>, std::size_t> > ready_list;
+	std::list< std::tuple< OnDataFunction, std::size_t> > ready_list;
 	
 	{
 		std::unique_lock<std::mutex> lock(m_mutex);
 		
 		for(auto i=m_data_requests.begin();i!=m_data_requests.end();/*nothing*/)
 		{
-			const std::shared_ptr<AsyncDataRequest>& req=*i;
+			AsyncDataRequest& req=*i;
 
 			bool err=false;
 
-			std::size_t readsize = TryGetData(req->buf, req->offset, req->size, err, nullptr, req->priority);
+			std::size_t readsize = TryGetData(req.done, req.buf, req.offset, req.size, err, nullptr, req.priority);
 			
 			if (readsize>0 || err)
 			{
-				ready_list.emplace_back(std::make_pair(req,readsize));
+				ready_list.emplace_back( std::make_tuple(req.func, readsize) );
 				i=m_data_requests.erase(i);
 			}
 			else
@@ -687,9 +699,9 @@ void NZBFile::ProcessAsyncDataRequests()
 		}
 	}
 	
-	for(const auto& r : ready_list)
+	for(const auto [func,size] : ready_list)
 	{
-		r.first->func(r.second);
+		func(size);
 	}
 }
 
@@ -697,13 +709,13 @@ void NZBFile::AsyncGetFilename(OnFilenameFunction func, CancelSignal* cancel)
 {
 	std::unique_lock<std::mutex> lock(m_mutex);
 	
-	if (m_hasBeginInfo) func(m_beginInfo.name);
+	if (m_beginInfo) func(m_beginInfo->name);
 	else
 	{
 		uint_fast64_t id=++m_id_counter;
 		boost::signals2::connection conn;
 		if (cancel!=0) conn=cancel->connect(std::bind(&NZBFile::CancelAsyncGetFilename,shared_from_this(),id));
-		m_filename_requests.emplace_back( new AsyncFilenameRequest( id,func,conn ) );
+		m_filename_requests.emplace_back( id,func,conn );
 
 		Preload(/*TODO: Pre-check segments*/false,cancel);
 	}
@@ -714,7 +726,7 @@ void NZBFile::CancelAsyncGetFilename(const uint_fast64_t& id)
 	std::unique_lock<std::mutex> lock(m_mutex);
 	for(auto i=m_filename_requests.begin();i!=m_filename_requests.end();++i)
 	{
-		if ((*i)->id==id)
+		if (i->id==id)
 		{
 			m_filename_requests.erase(i);
 			return;
@@ -726,14 +738,14 @@ void NZBFile::CancelAsyncGetFilename(const uint_fast64_t& id)
 
 unsigned long long NZBFile::CountMissingBytesInRange(const unsigned long long begin, const unsigned long long end)
 {
-	std::pair<std::size_t, std::size_t> range = FindSegmentIdxRange(begin, end);
+	const auto [lb, ub] = FindSegmentIdxRange(begin, end);
 
 	unsigned long long count = 0;
 
-	for (std::size_t idx = range.first; idx <= range.second; ++idx)
+	for (std::size_t idx = lb; idx <= ub; ++idx)
 	{
 		SegmentInfo& segment(m_segments[idx]);
-		if (segment.status != SegmentState::HasData) count += segment.bytes;
+		if (segment.status != SegmentState::HasData) count += segment.msgBytes;
 	}
 
 	return count;
@@ -741,9 +753,9 @@ unsigned long long NZBFile::CountMissingBytesInRange(const unsigned long long be
 
 bool NZBFile::BufferNextSegmentInRange(const unsigned long long begin, const unsigned long long end)
 {
-	std::pair<std::size_t, std::size_t> range = FindSegmentIdxRange(begin, end);
+	const auto [lb, ub] = FindSegmentIdxRange(begin, end);
 	
-	for (std::size_t idx = range.first; idx <= range.second; ++idx)
+	for (std::size_t idx = lb; idx <= ub; ++idx)
 	{
 		if (m_segments[idx].status == SegmentState::None)
 		{

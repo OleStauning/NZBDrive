@@ -12,24 +12,24 @@
 
 namespace ByteFountain
 {
-	enum class FileErrorFlag
+	enum class FileErrorFlag : unsigned long
 	{
 		OK = 0,
 		// Warnings:
-		FileEncrypted = 2^0,
-		FileCompressed = 2^1,
-		FilePWProtected = 2^2,
+		FileEncrypted = 1 << 0,
+		FileCompressed = 1 << 1,
+		FilePWProtected = 1 << 2,
 		// Errors:
-		MissingSegment = 2^10,
-		InvalidSegmentNumber = 2^11,
-		InvalidSegmentSize = 2^12,
-		EmptyMessageID = 2^13,
-		CacheFileError = 2^14,
-		ErrorInSegment = 2^15,
-		DownloadCanceled = 2^16,
-		DecodingFailed = 2^17,
-		EmptySegment = 2^18,
-		InvalidRARFile = 2^19
+		MissingSegment = 1 << 10,
+		InvalidSegmentNumber = 1 << 11,
+		InvalidSegmentSize = 1 << 12,
+		EmptyMessageID = 1 << 13,
+		CacheFileError = 1 << 14,
+		ErrorInSegment = 1 << 15,
+		DownloadCanceled = 1 << 16,
+		DecodingFailed = 1 << 17,
+		EmptySegment = 1 << 18,
+		InvalidRARFile = 1 << 19
 	};
 	typedef unsigned long FileErrorFlags;
 	
