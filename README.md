@@ -19,6 +19,8 @@ Install prerequisites and run `make` in the src-directory. This should generate 
 ## How to compile on Windows
 
 Download and install Visual Studio Community from <https://www.visualstudio.com/downloads/>
+* enable .NET desktop development with .NET framework 4.8.
+* enable Desktop development with C++ and Visual C++ MCF for x86 and x64 and C++/CLI Support.
 
 Download and install SDK10 from <https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk>
 
@@ -37,10 +39,10 @@ bcdedit.exe -set TESTSIGNING ON
 ```
 Then reboot.
 
-Download either 32 and/or 64 bit boost binaries from <https://sourceforge.net/projects/boost/files/boost-binaries/1.63.0/>
+Download either 32 and/or 64 bit boost binaries from <https://sourceforge.net/projects/boost/files/boost-binaries/1.68.0/>
 
-* boost_1_63_0-msvc-14.0-64.exe
-* boost_1_63_0-msvc-14.0-32.exe
+* boost_1_68_0-msvc-14.1-64.exe
+* boost_1_68_0-msvc-14.1-32.exe
 
 Install boost in directory "boost" in the same directory as you cloned NZBDrive.
 
@@ -72,12 +74,16 @@ Clone tinyxml2 from <https://github.com/leethomason/tinyxml2.git> in the same di
 
 Download the Community Edition of the Extended WPF Toolkit from <http://wpftoolkit.codeplex.com/>, and unpack to in the same directory as you cloned NZBDrive.
 
+Download curl 7.62.0 for Windows https://curl.haxx.se/windows/. Install in same directory as you cloned NZBDrive and rename to curl32 and/or curl64.
+
 Finally: open the solution file NZBDrive.sln in Visual Studio and Build the project "NZBDrive".
 
 You will now have a directory structure like this:
 ```
 /
 ├── boost/
+├── curl32/
+├── curl64/
 ├── dokany/
 ├── Extended WPF Tooklit Binaries/
 ├── NZBDrive/
