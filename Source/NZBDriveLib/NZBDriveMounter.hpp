@@ -16,7 +16,7 @@
 #include "RARFile.hpp"
 #include "ZIPFile.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -31,7 +31,7 @@ namespace ByteFountain
 		int32_t nzbID;
 		NZBDriveIMPL& drive;
 		Logger& logger;
-		const boost::filesystem::path mountdir;
+		const std::filesystem::path mountdir;
 		MountStatusFunction mountStatusFunction;
 		SplitFileFactory split_file_factory;
 		RARFileFactory rar_file_factory;
@@ -45,12 +45,12 @@ namespace ByteFountain
 		
 		NZBDriveMounter(NZBMountState& mount_state,
 			NZBDriveIMPL& drv, const bool extract_archives, 
-			const boost::filesystem::path& dir, 
+			const std::filesystem::path& dir, 
 			Logger& log, MountStatusFunction handler);
 		~NZBDriveMounter();
 		void StopInsertFile();
-		void RawInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir);
-		void StartInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir);
+		void RawInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir);
+		void StartInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir);
 //		std::shared_ptr<IDriveMounter> GetSharedPtr();
 	};
 	

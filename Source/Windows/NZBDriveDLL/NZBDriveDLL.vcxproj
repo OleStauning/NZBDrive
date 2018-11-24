@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -23,33 +23,34 @@
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>NZBDriveDLL</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -101,11 +102,12 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>..\..\NZBDriveLib;..\NZBDokanDriveLib;..\..\..\..\boost</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>BOOST_FILESYSTEM_NO_DEPRECATED</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.1;$(SolutionDir)\..\..\curl32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
@@ -125,11 +127,12 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>..\..\NZBDriveLib;..\NZBDokanDriveLib;..\..\..\..\boost</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>BOOST_FILESYSTEM_NO_DEPRECATED</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.1;$(SolutionDir)\..\..\curl64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
@@ -148,11 +151,12 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>..\..\NZBDriveLib;..\NZBDokanDriveLib;..\..\..\..\boost</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>BOOST_FILESYSTEM_NO_DEPRECATED</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.1;$(SolutionDir)\..\..\curl32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
@@ -171,11 +175,12 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>..\..\NZBDriveLib;..\NZBDokanDriveLib;..\..\..\..\boost</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>BOOST_FILESYSTEM_NO_DEPRECATED</UndefinePreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.1;$(SolutionDir)\..\..\curl64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.1</Version>
     </Link>
     <PostBuildEvent>

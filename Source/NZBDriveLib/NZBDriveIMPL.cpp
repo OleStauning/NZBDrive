@@ -47,7 +47,7 @@ namespace ByteFountain
 			if (h) h(std::forward<TArgs>(args)...);
 		}
 
-		bool expand_user(boost::filesystem::path& bpath)
+		bool expand_user(std::filesystem::path& bpath)
 		{
 			std::string path = bpath.string();
 			if (!path.empty() && path[0] == '~')
@@ -411,7 +411,7 @@ namespace ByteFountain
 		ResetHandlers();
 	}
 
-	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const std::filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		bool exctract_archives = (mountOptions & MountOptions::DontExtractArchives) == MountOptions::Default;
 		
@@ -449,7 +449,7 @@ namespace ByteFountain
 //			m_log << Logger::Info << "AsyncGetFilename Called: " << file << Logger::End;
 			
 			file->AsyncGetFilename(
-				[file, drive_mounter, mountdir, this](const boost::filesystem::path& filename)
+				[file, drive_mounter, mountdir, this](const std::filesystem::path& filename)
 			{
 //				m_log << Logger::Info << "AsyncGetFilename Returns: " << file << Logger::End;
 
@@ -501,7 +501,7 @@ namespace ByteFountain
 		return nzbID;
 	}
 
-	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
+	int32_t NZBDriveIMPL::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		try
@@ -516,7 +516,7 @@ namespace ByteFountain
 		}
     }
 	
-	int32_t NZBDriveIMPL::Mount(const filesystem::path& mountdir, const std::string& nzbfile, 
+	int32_t NZBDriveIMPL::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 		const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		if (m_state != Started) return MountErrorCode::MountingFailed;
@@ -538,7 +538,7 @@ namespace ByteFountain
 		return Mount(nzbID, mountdir, mountfile, mountStatusFunction, mountOptions);
 	}
 
-	NZBDriveIMPL::MountStates::iterator NZBDriveIMPL::Unmount(const filesystem::path& mountdir, const MountStates::iterator& it_state)
+	NZBDriveIMPL::MountStates::iterator NZBDriveIMPL::Unmount(const std::filesystem::path& mountdir, const MountStates::iterator& it_state)
 	{
 		if (it_state != m_mountStates.end())
 		{
@@ -569,7 +569,7 @@ namespace ByteFountain
 		return m_mountStates.end();
 	}
 
-	int32_t NZBDriveIMPL::Unmount(const filesystem::path& mountdir)
+	int32_t NZBDriveIMPL::Unmount(const std::filesystem::path& mountdir)
 	{
 		m_log << Logger::Info << "Unmounting: " << mountdir << Logger::End;
 
@@ -596,22 +596,22 @@ namespace ByteFountain
 		return m_root_dir;
 	}
 
-	std::shared_ptr<IDirectory> NZBDriveIMPL::GetDirectory(const filesystem::path& p)
+	std::shared_ptr<IDirectory> NZBDriveIMPL::GetDirectory(const std::filesystem::path& p)
 	{
 		return m_root_dir->GetDirectory(p);
 	}
 
-	std::shared_ptr<IFile> NZBDriveIMPL::GetFile(const filesystem::path& p)
+	std::shared_ptr<IFile> NZBDriveIMPL::GetFile(const std::filesystem::path& p)
 	{
 		return m_root_dir->GetFile(p);
 	}
 
-	std::vector< std::pair<filesystem::path, ContentType> > NZBDriveIMPL::GetContent()
+	std::vector< std::pair<std::filesystem::path, ContentType> > NZBDriveIMPL::GetContent()
 	{
 		return m_root_dir->GetContent();
 	}
 
-	void NZBDriveIMPL::EnumFiles(std::function<void(const filesystem::path& path, std::shared_ptr<IFile> file)> callback)
+	void NZBDriveIMPL::EnumFiles(std::function<void(const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback)
 	{
 		m_root_dir->EnumFiles(callback);
 	}

@@ -3,15 +3,15 @@
 #include "stdafx.h"
 #include "NZBDriveDLL.h"
 
-#ifdef __cplusplus_cli // FIX: generic clash in C++/CLI and boost::filesystem.
-#define generic __identifier(generic)// FIX: generic clash in C++/CLI and boost::filesystem.
+#ifdef __cplusplus_cli // FIX: generic clash in C++/CLI and std::filesystem.
+#define generic __identifier(generic)// FIX: generic clash in C++/CLI and std::filesystem.
 #endif
 
 #include "NZBDokanDrive.hpp"
 
-#ifdef __cplusplus_cli// FIX: generic clash in C++/CLI and boost::filesystem.
-#undef generic// FIX: generic clash in C++/CLI and boost::filesystem.
-#endif// FIX: generic clash in C++/CLI and boost::filesystem.
+#ifdef __cplusplus_cli// FIX: generic clash in C++/CLI and std::filesystem.
+#undef generic// FIX: generic clash in C++/CLI and std::filesystem.
+#endif// FIX: generic clash in C++/CLI and std::filesystem.
 
 #include <boost/bind.hpp>
 #include <vcclr.h>
@@ -84,7 +84,7 @@ namespace NZBDriveDLL
 			return res;
 		}
 
-		String^ adapt(const boost::filesystem::path& str)
+		String^ adapt(const std::filesystem::path& str)
 		{
 			return gcnew String(str.string().c_str());
 		}
@@ -124,7 +124,7 @@ namespace NZBDriveDLL
 	{
 		NZBFileOpen(nzbID, path);
 	}
-	void NotifyNZBFileOpenProxy(gcroot<NZBDrive^> this_, const int32_t nzbID, const boost::filesystem::path& path)
+	void NotifyNZBFileOpenProxy(gcroot<NZBDrive^> this_, const int32_t nzbID, const std::filesystem::path& path)
 	{
 		this_->NotifyNZBFileOpen(nzbID, adapt(path));
 	}
@@ -148,7 +148,7 @@ namespace NZBDriveDLL
 	{
 		FileInfo(fileID, name, size);
 	}
-	void NotifyFileInfoProxy(gcroot<NZBDrive^> this_, const int32_t fileID, const boost::filesystem::path& name, const uint64_t size)
+	void NotifyFileInfoProxy(gcroot<NZBDrive^> this_, const int32_t fileID, const std::filesystem::path& name, const uint64_t size)
 	{
 		this_->NotifyFileInfo(fileID, adapt(name), size);
 	}
@@ -377,34 +377,6 @@ namespace NZBDriveDLL
 
 	//property UsenetServer Server[int] { UsenetServer get(int i); void set(int i, UsenetServer s); }
 
-	void NZBDrive::CachePath::set(String^ val)
-	{
-		char* myval = (char*)Marshal::StringToHGlobalAnsi(val).ToPointer(); 
-		try
-		{
-			m_pimpl->SetCachePath(myval);
-		}
-		catch(...)
-		{
-			except_convert();
-		}
-		finally
-		{
-			Marshal::FreeHGlobal((IntPtr)myval);
-		}
-	}
-	String^ NZBDrive::CachePath::get()
-	{
-		try
-		{
-			return gcnew String(m_pimpl->GetCachePath().c_str());
-		}
-		catch(...)
-		{
-			except_convert();
-		}
-		throw gcnew System::Exception(gcnew System::String("Internal error"));
-	}
 	void NZBDrive::PreCheckSegments::set(bool val)
 	{
 		try

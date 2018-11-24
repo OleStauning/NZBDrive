@@ -17,7 +17,7 @@
 #include <memory>
 #include <string>
 #include <functional>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -52,17 +52,17 @@ namespace ByteFountain
 		bool Start();
 		void Stop();
 
-		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
-		int32_t Mount(const boost::filesystem::path& mountdir, const nzb& nzb, 
+		int32_t Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
 			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
-		int32_t Unmount(const boost::filesystem::path& mountdir);
+		int32_t Unmount(const std::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();
-		std::shared_ptr<IDirectory> GetDirectory(const boost::filesystem::path& p);
-		std::shared_ptr<IFile> GetFile(const boost::filesystem::path& p);
-		std::vector< std::pair<boost::filesystem::path, ContentType> > GetContent();
-		void EnumFiles(std::function<void (const boost::filesystem::path& path, std::shared_ptr<IFile> file)> callback);
+		std::shared_ptr<IDirectory> GetDirectory(const std::filesystem::path& p);
+		std::shared_ptr<IFile> GetFile(const std::filesystem::path& p);
+		std::vector< std::pair<std::filesystem::path, ContentType> > GetContent();
+		void EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback);
 
 		uint_fast64_t RXBytes();
 		uint_fast64_t GetTotalNumberOfBytes() const;

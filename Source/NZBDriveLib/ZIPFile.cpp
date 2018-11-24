@@ -11,7 +11,7 @@
 #include "assert.h"
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <atomic>
 
 #ifdef min
@@ -31,7 +31,7 @@ namespace
 {
 	bool GetZIPFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part)
 	{
-		boost::filesystem::path filename=file->GetFileName();
+		std::filesystem::path filename=file->GetFileName();
 		
 		static sregex zipfile = sregex::compile("(?i:^(.*?)\\.(zip)$)");
 		
@@ -50,7 +50,7 @@ namespace
 	
 }
 		
-	ZIPFile::ZIPFile(Logger& log, const boost::filesystem::path& path, const std::string& filename, const zip::local_file_header& local_file_header):
+	ZIPFile::ZIPFile(Logger& log, const std::filesystem::path& path, const std::string& filename, const zip::local_file_header& local_file_header):
 		MultipartFile(log,path,filename), m_local_file_header(local_file_header)
 	{
 		if (InternalIsCompressed()) SetErrorFlag(FileErrorFlag::FileCompressed);
@@ -63,7 +63,7 @@ namespace
 	
 	ZIPFileFactory::ZIPFileFactory(Logger& log, IDriveMounter& mounter):m_log(log),m_mounter(mounter){}
 	
-	bool ZIPFileFactory::AddFile(const filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel)
+	bool ZIPFileFactory::AddFile(const std::filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel)
 	{
 		std::string name;
 		int part=0;
@@ -71,7 +71,7 @@ namespace
 		
 		std::shared_ptr<zip_data> data(new zip_data());
 		data->err=false;
-		data->path=path/filesystem::path(name).stem();
+		data->path=path/std::filesystem::path(name).stem();
 		data->part=part;
 		data->cancel=&cancel;
 		GetZIPLocalFileHeader(data,file,0);
@@ -130,12 +130,12 @@ namespace
 				
 				data->filename = text_tool::cp_to_utf8(text_tool::cp1252, data->filename);
 				
-				boost::filesystem::path filepath=data->path/data->filename;
+				std::filesystem::path filepath=data->path/data->filename;
 				
-				boost::filesystem::path zip_path=filepath.branch_path();
-				boost::filesystem::path zip_name=filepath.filename();
+				std::filesystem::path zip_path=filepath.parent_path();
+				std::filesystem::path zip_name=filepath.filename();
 
-				auto key=std::pair<boost::filesystem::path,std::string>(zip_path,zip_name.string());
+				auto key=std::pair<std::filesystem::path,std::string>(zip_path,zip_name.string());
 				std::shared_ptr<ZIPFile>& zipFile=m_zip_files[key];
 				if (zipFile.get()==0)
 				{

@@ -98,17 +98,17 @@ namespace ByteFountain
 	{
 		m_pImpl->Stop();
 	}
-	int32_t NZBDrive::Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+	int32_t NZBDrive::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		return m_pImpl->Mount(mountdir, nzbfile, mountStatusFunction, mountOptions);
 	}
-	int32_t NZBDrive::Mount(const boost::filesystem::path& mountdir, const nzb& nzb, 
+	int32_t NZBDrive::Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
 		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		return m_pImpl->Mount(mountdir, "", nzb, mountStatusFunction, mountOptions);
 	}
-	int32_t NZBDrive::Unmount(const boost::filesystem::path& mountdir)
+	int32_t NZBDrive::Unmount(const std::filesystem::path& mountdir)
 	{
 		return m_pImpl->Unmount(mountdir);
 	}
@@ -116,19 +116,19 @@ namespace ByteFountain
 	{
 		return m_pImpl->GetRootDir();
 	}
-	std::shared_ptr<IDirectory> NZBDrive::GetDirectory(const boost::filesystem::path& p)
+	std::shared_ptr<IDirectory> NZBDrive::GetDirectory(const std::filesystem::path& p)
 	{
 		return m_pImpl->GetDirectory(p);
 	}
-	std::shared_ptr<IFile> NZBDrive::GetFile(const boost::filesystem::path& p)
+	std::shared_ptr<IFile> NZBDrive::GetFile(const std::filesystem::path& p)
 	{
 		return m_pImpl->GetFile(p);
 	}
-	std::vector< std::pair<boost::filesystem::path, ContentType> > NZBDrive::GetContent()
+	std::vector< std::pair<std::filesystem::path, ContentType> > NZBDrive::GetContent()
 	{
 		return m_pImpl->GetContent();
 	}
-	void NZBDrive::EnumFiles(std::function<void(const boost::filesystem::path& path, std::shared_ptr<IFile> file)> callback)
+	void NZBDrive::EnumFiles(std::function<void(const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback)
 	{
 		m_pImpl->EnumFiles(callback);
 	}

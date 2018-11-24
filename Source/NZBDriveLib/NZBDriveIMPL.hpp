@@ -50,7 +50,7 @@ namespace ByteFountain
 
 		typedef boost::signals2::signal<void()> CancelSignal;
 
-		typedef std::map< const boost::filesystem::path, NZBMountState > MountStates;
+		typedef std::map< const std::filesystem::path, NZBMountState > MountStates;
 		MountStates m_mountStates;
 
 		friend struct NZBDriveMounter;
@@ -63,7 +63,7 @@ namespace ByteFountain
 		std::thread m_thread;
 		std::unique_ptr<boost::asio::io_service::work> m_work;
 
-		boost::filesystem::path m_cache_path;
+		std::filesystem::path m_cache_path;
 		SegmentCache m_segment_cache;
 		std::shared_ptr<NZBDirectory> m_root_dir;
 		std::shared_ptr<NZBDirectory> m_root_rawdir;
@@ -86,7 +86,7 @@ namespace ByteFountain
 
 		// Event handling:
 		boost::asio::io_service m_event_io_service;
-		boost::asio::strand m_event_strand;
+		boost::asio::io_service::strand m_event_strand;
 		std::thread m_event_thread;
 		std::unique_ptr<boost::asio::io_service::work> m_event_work;
 
@@ -118,9 +118,9 @@ namespace ByteFountain
 
 		RateLimiter::Parameters GetRateLimiterConfiguration();
 
-		int32_t Mount(const int32_t mountID, const boost::filesystem::path& mountdir, const nzb& nzb, 
+		int32_t Mount(const int32_t mountID, const std::filesystem::path& mountdir, const nzb& nzb, 
 			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
-		NZBDriveIMPL::MountStates::iterator Unmount(const boost::filesystem::path& mountdir,
+		NZBDriveIMPL::MountStates::iterator Unmount(const std::filesystem::path& mountdir,
 			const NZBDriveIMPL::MountStates::iterator& it_state);
 
 	protected:
@@ -157,17 +157,17 @@ namespace ByteFountain
 		bool Start();
 		void Stop();
 
-		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
-		int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, 
+		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
 			const nzb& nzb, MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
-		int32_t Unmount(const boost::filesystem::path& mountdir);
+		int32_t Unmount(const std::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();
-		std::shared_ptr<IDirectory> GetDirectory(const boost::filesystem::path& p);
-		std::shared_ptr<IFile> GetFile(const boost::filesystem::path& p);
-		std::vector< std::pair<boost::filesystem::path, ContentType> > GetContent();
-		void EnumFiles(std::function<void(const boost::filesystem::path& path, std::shared_ptr<IFile> file)> callback);
+		std::shared_ptr<IDirectory> GetDirectory(const std::filesystem::path& p);
+		std::shared_ptr<IFile> GetFile(const std::filesystem::path& p);
+		std::vector< std::pair<std::filesystem::path, ContentType> > GetContent();
+		void EnumFiles(std::function<void(const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback);
 
 		uint_fast64_t RXBytes() const { return m_limiter.Network.RXBytes; }
 		uint_fast64_t GetTotalNumberOfBytes() const;

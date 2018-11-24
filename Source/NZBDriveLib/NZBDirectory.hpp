@@ -15,7 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <map>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <thread>
 #include <mutex>
 
@@ -39,29 +39,29 @@ namespace ByteFountain
 			ContentType GetType() { return file.get() ? ContentType::File : ContentType::Directory; }
 			~Element(){}
 		};
-		std::map< filesystem::path, Element > content;
+		std::map< std::filesystem::path, Element > content;
 		
-		void RegisterFile(const std::shared_ptr<IFile>& file, filesystem::path::iterator i, const filesystem::path& p=filesystem::path());
-		void Unmount(filesystem::path::iterator i);
-		bool Exists(filesystem::path::iterator i);
-		std::shared_ptr<NZBDirectory> GetDirectory(filesystem::path::iterator i);
-		std::shared_ptr<IFile> GetFile(filesystem::path::iterator i);
+		void RegisterFile(const std::shared_ptr<IFile>& file, std::filesystem::path::iterator i, const std::filesystem::path& p= std::filesystem::path());
+		void Unmount(std::filesystem::path::iterator i);
+		bool Exists(std::filesystem::path::iterator i);
+		std::shared_ptr<NZBDirectory> GetDirectory(std::filesystem::path::iterator i);
+		std::shared_ptr<IFile> GetFile(std::filesystem::path::iterator i);
 		void MyEnumFiles(std::unique_lock<std::mutex>& lock, 
-			std::function<void (const filesystem::path& path, std::shared_ptr<IFile> file)> callback,
-			const filesystem::path& p=filesystem::path());
+			std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
+			const std::filesystem::path& p= std::filesystem::path());
 	public:
 		NZBDirectory():m_mutex(),m_root_mutex(m_mutex){}
 		~NZBDirectory();
-		std::ostream& Print(std::ostream& ost, const filesystem::path& p=filesystem::path());
-		void RegisterFile(const std::shared_ptr<IFile>& file, const filesystem::path& p);
-		std::shared_ptr<IDirectory> GetDirectory(const filesystem::path& p);
-		std::shared_ptr<IFile> GetFile(const filesystem::path& p);
-		std::vector< std::pair<filesystem::path,ContentType> > GetContent();
-		bool Exists(const filesystem::path& p);
-		void Unmount(const filesystem::path& p);
+		std::ostream& Print(std::ostream& ost, const std::filesystem::path& p= std::filesystem::path());
+		void RegisterFile(const std::shared_ptr<IFile>& file, const std::filesystem::path& p);
+		std::shared_ptr<IDirectory> GetDirectory(const std::filesystem::path& p);
+		std::shared_ptr<IFile> GetFile(const std::filesystem::path& p);
+		std::vector< std::pair<std::filesystem::path,ContentType> > GetContent();
+		bool Exists(const std::filesystem::path& p);
+		void Unmount(const std::filesystem::path& p);
 		void Clear();
-		void EnumFiles(std::function<void (const filesystem::path& path, std::shared_ptr<IFile> file)> callback,
-			const filesystem::path& p=filesystem::path());
+		void EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
+			const std::filesystem::path& p= std::filesystem::path());
 		uint_fast64_t GetTotalNumberOfBytes() const { return m_totalNumberOfBytes; }
 	};
 	

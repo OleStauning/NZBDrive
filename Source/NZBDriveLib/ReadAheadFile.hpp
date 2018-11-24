@@ -22,7 +22,7 @@ namespace ByteFountain
 	class ReadAheadFile : public InternalFile, public std::enable_shared_from_this<ReadAheadFile>
 	{
 		boost::asio::io_service& m_io_service;
-		boost::asio::strand m_strand;
+		boost::asio::io_context::strand m_strand;
 		Logger& m_logger;
 		std::shared_ptr<InternalFile> m_file;
 		NZBDriveIMPL& m_drive;
@@ -39,7 +39,7 @@ namespace ByteFountain
 		virtual ~ReadAheadFile();
 		bool IsCompressed() const;
 		bool IsPWProtected() const;
-		boost::filesystem::path GetFileName();
+		std::filesystem::path GetFileName();
 		unsigned long long GetFileSize();
 		bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize);
 

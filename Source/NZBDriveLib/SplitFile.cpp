@@ -35,7 +35,7 @@ using namespace boost::xpressive;
 	
 	bool SplitFileFactory::GetSplitFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part)
 	{
-		boost::filesystem::path filename=file->GetFileName();
+		std::filesystem::path filename=file->GetFileName();
 	
 		std::string ext;
 		smatch what;
@@ -66,13 +66,13 @@ using namespace boost::xpressive;
 		return false;
 	}
 
-	bool SplitFileFactory::AddFile(const filesystem::path& path, std::shared_ptr<InternalFile> file)
+	bool SplitFileFactory::AddFile(const std::filesystem::path& path, std::shared_ptr<InternalFile> file)
 	{
 		std::string name;
 		int part=0;
 		if (!GetSplitFilenameAndPart(file,name,part)) return false;
 		
-		std::pair<filesystem::path,std::string> key=std::make_pair(path,name);
+		std::pair<std::filesystem::path,std::string> key=std::make_pair(path,name);
 		
 		SplitFileParts& parts=m_split_file_parts[key];
 

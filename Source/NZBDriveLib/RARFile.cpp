@@ -104,7 +104,7 @@ namespace
 }
 
 
-	RARFile::RARFile(Logger& log, const boost::filesystem::path& path, const boost::filesystem::path& filename, 
+	RARFile::RARFile(Logger& log, const std::filesystem::path& path, const std::filesystem::path& filename, 
 		const rar::file_head& file_head): MultipartFile(log,path,filename), m_file_head(file_head)
 	{
 		if (InternalIsCompressed()) SetErrorFlag(FileErrorFlag::FileCompressed);
@@ -118,7 +118,7 @@ namespace
 	
 	bool RARFileFactory::GetRARFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part)
 	{
-		boost::filesystem::path filename=file->GetFileName();
+		std::filesystem::path filename=file->GetFileName();
 	
 		std::string ext;
 		smatch what;
@@ -158,7 +158,7 @@ namespace
 	}
 	
 	
-	bool RARFileFactory::AddFile(const filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel)
+	bool RARFileFactory::AddFile(const std::filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel)
 	{
 		std::string name;
 		int part=0;
@@ -167,7 +167,7 @@ namespace
 		auto data = std::make_shared<rar_data>();
 		data->err=FileErrorFlag::OK;
 		data->rawpath=path;
-		data->path=path/filesystem::path(name).stem();
+		data->path=path/std::filesystem::path(name).stem();
 		data->part=part;
 		data->cancel=&cancel;
 		GetMarkHead(data,file,0);
@@ -306,12 +306,12 @@ namespace
 //					std::replace( data->filename.begin(), data->filename.end(), '\\', '/');
 					data->filename.make_preferred();
 					 
-					boost::filesystem::path filepath=data->path/data->filename;
+					std::filesystem::path filepath=data->path/data->filename;
 
-					boost::filesystem::path rar_path=filepath.branch_path();
-					boost::filesystem::path rar_name=filepath.filename();
+					std::filesystem::path rar_path=filepath.parent_path();
+					std::filesystem::path rar_name=filepath.filename();
 					
-					std::pair<boost::filesystem::path,std::string> key(rar_path,rar_name.string());
+					std::pair<std::filesystem::path,std::string> key(rar_path,rar_name.string());
 					std::shared_ptr<RARFile>& rarFile = m_rar_files[key];
 					if (rarFile.get()==0)
 					{

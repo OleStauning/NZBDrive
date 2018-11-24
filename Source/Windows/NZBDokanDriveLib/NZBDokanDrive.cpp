@@ -20,7 +20,7 @@
 #include <mutex>
 #include <future>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #define LODWORD(l) ((DWORD)((DWORDLONG)(l)))
 #define HIDWORD(l) ((DWORD)(((DWORDLONG)(l)>>32)&0xFFFFFFFF))
 #define VOL_SERIAL 0x19831116
@@ -140,8 +140,8 @@ public:
 
 	virtual ULONG CopySecurityDescriptorTo(ULONG lengthSD, PSECURITY_DESCRIPTOR pSecDesc)=0;
 
-	virtual std::shared_ptr<ByteFountain::IFile> GetFile(const boost::filesystem::path& path)=0;
-	virtual std::shared_ptr<ByteFountain::IDirectory> GetDirectory(const boost::filesystem::path& path)=0;
+	virtual std::shared_ptr<ByteFountain::IFile> GetFile(const std::filesystem::path& path)=0;
+	virtual std::shared_ptr<ByteFountain::IDirectory> GetDirectory(const std::filesystem::path& path)=0;
 	virtual std::shared_ptr<ByteFountain::IDirectory> GetRootDirectory()=0;
 	virtual unsigned long long GetTotalNumberOfBytes() const=0;
 
@@ -327,7 +327,7 @@ NZBDokanDriveCreateFile(LPCWSTR FileName,
 		NZBDokanDriveCheckFlag(FileAttributes, SECURITY_EFFECTIVE_ONLY);
 		NZBDokanDriveCheckFlag(FileAttributes, SECURITY_SQOS_PRESENT);
 
-		boost::filesystem::path path(FileName);
+		std::filesystem::path path(FileName);
 
 		std::shared_ptr<ByteFountain::IDirectory> subdir;
 		std::shared_ptr<ByteFountain::IFile> file;
@@ -371,7 +371,7 @@ NZBDokanDriveOpenDirectory(
 			DokanFileInfo->Context = 0;
 		}
 
-		boost::filesystem::path path(FileName);
+		std::filesystem::path path(FileName);
 		std::shared_ptr<ByteFountain::IDirectory> subdir=g_dokanContext->GetDirectory(path);
 		if (subdir)
 		{
@@ -478,7 +478,7 @@ NZBDokanDriveReadFile(LPCWSTR FileName,
 
 		if (!file)
 		{
-			boost::filesystem::path path(FileName);
+			std::filesystem::path path(FileName);
 			file = g_dokanContext->GetFile(path);
 			if (file)
 			{
@@ -537,7 +537,7 @@ NZBDokanDriveGetFileInformation(
 		else
 		{
 			std::string filename=ByteFountain::text_tool::unicode_to_utf8(FileName);
-			boost::filesystem::path path(filename);
+			std::filesystem::path path(filename);
 			directory=g_dokanContext->GetDirectory(path);
 			file=g_dokanContext->GetFile(path);
 		}
@@ -603,12 +603,12 @@ NZBDokanDriveFindFiles(
 		PWCHAR				yenStar = L"\\*";
 		int count = 0;
 
-		boost::filesystem::path path(FileName);
+		std::filesystem::path path(FileName);
 		std::shared_ptr<ByteFountain::IDirectory> subdir=g_dokanContext->GetDirectory(path);
 	
 		if (!subdir) return ERROR_SUCCESS;
 
-		std::vector< std::pair<boost::filesystem::path,ByteFountain::ContentType> > content=subdir->GetContent();
+		std::vector< std::pair<std::filesystem::path,ByteFountain::ContentType> > content=subdir->GetContent();
 
 		if (subdir!=g_dokanContext->GetRootDirectory())
 		{
@@ -633,7 +633,7 @@ NZBDokanDriveFindFiles(
 
 		for(const auto& e : content)
 		{
-			const boost::filesystem::path& mypath(e.first);
+			const std::filesystem::path& mypath(e.first);
 			ByteFountain::ContentType type(e.second);
 
 			findData.ftCreationTime.dwLowDateTime = 0;
@@ -1219,10 +1219,10 @@ public:
 			return NZBDokanDrive::DriveNotStarted;
 		}
 
-		boost::filesystem::path mynzbpath(nzbpath);
-		boost::filesystem::path mynzbmount(mynzbpath.filename());
+		std::filesystem::path mynzbpath(nzbpath);
+		std::filesystem::path mynzbmount(mynzbpath.filename());
 
-		return m_NZBDrive->Mount(mynzbmount,mynzbpath, 
+		return m_NZBDrive->Mount(mynzbmount,mynzbpath.string(), 
 			[callback](const int32_t nzbID, const int32_t parts, const int32_t total)
 			{
 				callback(nzbID,parts,total);
@@ -1233,8 +1233,8 @@ public:
 		std::unique_lock<std::mutex> lk(m_statusMutex);
 		if (m_status!=Started) return NZBDokanDrive::DriveNotStarted;
 
-		boost::filesystem::path mynzbpath(nzbpath);
-		boost::filesystem::path mynzbmount(mynzbpath.filename());
+		std::filesystem::path mynzbpath(nzbpath);
+		std::filesystem::path mynzbmount(mynzbpath.filename());
 
 		int32_t res = m_NZBDrive->Unmount(mynzbmount);
 
@@ -1262,8 +1262,6 @@ public:
 		m_NZBDrive->RemoveServer(id);
 	}
 
-	boost::filesystem::path GetCachePath() const { return m_NZBDrive->GetCachePath(); }
-	void SetCachePath(const boost::filesystem::path& val) { m_NZBDrive->SetCachePath(val); }
 	bool GetPreCheckSegments(){ return m_pre_check_segments; }
 	void SetPreCheckSegments(const bool val){ m_pre_check_segments=val; }
 	void SetNetworkThrottling(const NZBDokanDrive::NetworkThrottling& val)
@@ -1413,11 +1411,11 @@ public:
 		std::unique_lock<std::mutex> lock(m_dokanContextsMutex);
 		m_dokanContexts.clear();
 	}
-	std::shared_ptr<ByteFountain::IFile> GetFile(const boost::filesystem::path& path)
+	std::shared_ptr<ByteFountain::IFile> GetFile(const std::filesystem::path& path)
 	{
 		return m_NZBDrive->GetFile(path);
 	}
-	std::shared_ptr<ByteFountain::IDirectory> GetDirectory(const boost::filesystem::path& path)
+	std::shared_ptr<ByteFountain::IDirectory> GetDirectory(const std::filesystem::path& path)
 	{
 		return m_NZBDrive->GetDirectory(path);
 	}
@@ -1474,15 +1472,6 @@ std::wstring NZBDokanDrive::GetDriveLetter()
 void NZBDokanDrive::SetDriveLetter(const std::wstring& val)
 {
 	m_pimpl->SetDriveLetter(val);
-}
-
-void NZBDokanDrive::SetCachePath(const boost::filesystem::path& cache_path)
-{
-	m_pimpl->SetCachePath(cache_path);
-}
-boost::filesystem::path NZBDokanDrive::GetCachePath() const
-{
-	return m_pimpl->GetCachePath();
 }
 
 bool NZBDokanDrive::GetPreCheckSegments()

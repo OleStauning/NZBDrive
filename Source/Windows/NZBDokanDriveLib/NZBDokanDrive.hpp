@@ -1,4 +1,4 @@
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <functional>
 #include <string>
 
@@ -75,10 +75,10 @@ public:
 	enum SegmentState { None, Loading, HasData, MissingSegment, DownloadFailed };
 
 	typedef std::function< void(const int32_t nzbID, const int32_t parts, const int32_t total) > MountStatusFunction;
-	typedef std::function< void(const int32_t nzbID, const boost::filesystem::path& path) > NZBFileOpenFunction;
+	typedef std::function< void(const int32_t nzbID, const std::filesystem::path& path) > NZBFileOpenFunction;
 	typedef std::function< void(const int32_t nzbID) > NZBFileCloseFunction;
 	typedef std::function< void(const int32_t nzbID, const int32_t fileID, const int32_t segments, const uint64_t size) > FileAddedFunction;
-	typedef std::function< void(const int32_t fileID, const boost::filesystem::path& name, const uint64_t size) > FileInfoFunction;
+	typedef std::function< void(const int32_t fileID, const std::filesystem::path& name, const uint64_t size) > FileInfoFunction;
 	typedef std::function< void(const int32_t fileID, const int32_t segment, const SegmentState state) > FileSegmentStateChangedFunction;
 	typedef std::function< void(const int32_t fileID) > FileRemovedFunction;
 	typedef std::function< void(const ConnectionState state, const int32_t server, const int32_t thread) > ConnectionStateChangedFunction;
@@ -121,7 +121,7 @@ public:
 	void SetEventLogHandler(EventLogFunction handler);
 	void SetConnectionInfoHandler(ConnectionInfoFunction handler);
 
-	void SetCachePath(const boost::filesystem::path& cache_path);
-	boost::filesystem::path GetCachePath() const;
+	void SetCachePath(const std::filesystem::path& cache_path);
+	std::filesystem::path GetCachePath() const;
 
 };

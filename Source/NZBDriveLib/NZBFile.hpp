@@ -24,7 +24,7 @@
 #include <thread>
 #include <condition_variable>
 #include <boost/asio.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include "SegmentCache.hpp"
@@ -37,9 +37,9 @@ class NZBDirectory;
 class NZBFile : public InternalFile, public std::enable_shared_from_this<NZBFile>
 {
 public:
-	typedef std::function< void(const boost::filesystem::path& filename) > OnFilenameFunction;
+	typedef std::function< void(const std::filesystem::path& filename) > OnFilenameFunction;
 	typedef std::function< void(const int32_t nzbID, const int32_t fileID, const int32_t segments, const uint64_t size) > FileAddedFunction;
-	typedef std::function< void(const int32_t fileID, const boost::filesystem::path& name, const uint64_t size) > FileInfoFunction;
+	typedef std::function< void(const int32_t fileID, const std::filesystem::path& name, const uint64_t size) > FileInfoFunction;
 	typedef std::function< void(const int32_t fileID, const int32_t segment, const SegmentState state) > FileSegmentStateChangedFunction;
 	typedef std::function< void(const int32_t fileID) > FileRemovedFunction;
 
@@ -207,7 +207,7 @@ public:
 //	bool AssertBeginInfo();
 	void RemoveCacheFile();
 
-	boost::filesystem::path GetFileName();
+	std::filesystem::path GetFileName();
 	unsigned long long GetFileSize();
 	bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize);
 

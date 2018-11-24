@@ -12,7 +12,7 @@
 #include "InternalFile.hpp"
 #include "InternalFileVisitor.hpp"
 #include "Logger.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <map>
 
 namespace ByteFountain
@@ -39,17 +39,17 @@ private:
 	};
 	
 	Logger& m_log;
-	boost::filesystem::path m_path;             // Path-name of multifile-part location
-	boost::filesystem::path m_filename;         // File-name of multipart-file
+	std::filesystem::path m_path;             // Path-name of multifile-part location
+	std::filesystem::path m_filename;         // File-name of multipart-file
 	std::map< int, FilePart > m_parts;          // Map for all file-parts: part-nuymber => file-part
 	typedef std::map< unsigned long long, FilePart > PartsMap;
 	PartsMap m_parts_map;                       // Map for all file-parts: part-end-address => file-part
 	unsigned long long m_filesize;              // Size of multipart-file
 	
 public:
-	MultipartFile(Logger& log, const boost::filesystem::path& path, const boost::filesystem::path& filename);
+	MultipartFile(Logger& log, const std::filesystem::path& path, const std::filesystem::path& filename);
 	virtual ~MultipartFile();
-	boost::filesystem::path GetFileName();
+	std::filesystem::path GetFileName();
 	unsigned long long GetFileSize();
 	bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize);
 	void AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size, CancelSignal* cancel = 0, const bool priority = false);

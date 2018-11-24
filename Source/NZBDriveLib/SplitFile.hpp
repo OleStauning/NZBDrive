@@ -11,7 +11,7 @@
 #include "MultipartFile.hpp"
 #include "IDriveMounter.hpp"
 #include "Logger.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <map>
 #include <memory>
 
@@ -38,19 +38,19 @@ class SplitFileFactory
 	struct SplitFileParts
 	{
 		typedef std::map<int, std::shared_ptr<InternalFile> > PartsMap;
-		boost::filesystem::path path;
+		std::filesystem::path path;
 		std::string name;
 		PartsMap parts;
 	};
 
-	std::map<std::pair<boost::filesystem::path,std::string>, SplitFileParts > m_split_file_parts;
+	std::map<std::pair<std::filesystem::path,std::string>, SplitFileParts > m_split_file_parts;
 
 	bool GetSplitFilenameAndPart(std::shared_ptr<InternalFile> file, std::string& name, int& part);
 
 public:
 	SplitFileFactory(Logger& log, IDriveMounter& mounter);
 		
-	bool AddFile(const boost::filesystem::path& path, std::shared_ptr<InternalFile> file);
+	bool AddFile(const std::filesystem::path& path, std::shared_ptr<InternalFile> file);
 	void Finalize();
 };
 

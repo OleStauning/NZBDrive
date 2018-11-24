@@ -16,7 +16,7 @@
 #include <memory>
 #include <string>
 #include <functional>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -108,10 +108,10 @@ namespace ByteFountain
 	typedef std::function< void(const int64_t time, const int32_t server, const uint64_t bytesTX, uint64_t bytesRX,
 		uint32_t missingSegmentCount, uint32_t connectionTimeoutCount, uint32_t errorCount)> ConnectionInfoFunction;
 	typedef std::function< void(const int32_t nzbID, const int32_t parts, const int32_t total) > MountStatusFunction;
-	typedef std::function< void(const int32_t nzbID, const boost::filesystem::path& path) > NZBFileOpenFunction;
+	typedef std::function< void(const int32_t nzbID, const std::filesystem::path& path) > NZBFileOpenFunction;
 	typedef std::function< void(const int32_t nzbID) > NZBFileCloseFunction;
 	typedef std::function< void(const int32_t nzbID, const int32_t fileID, const int32_t segments, const uint64_t size) > NZBFileAddedFunction;
-	typedef std::function< void(const int32_t fileID, const boost::filesystem::path& name, const uint64_t size) > NZBFileInfoFunction;
+	typedef std::function< void(const int32_t fileID, const std::filesystem::path& name, const uint64_t size) > NZBFileInfoFunction;
 	typedef std::function< void(const int32_t fileID, const int32_t segment, const SegmentState state) > NZBFileSegmentStateChangedFunction;
 	typedef std::function< void(const int32_t fileID) > NZBFileRemovedFunction;
 
@@ -139,14 +139,14 @@ namespace ByteFountain
 		virtual bool Start() = 0;
 		virtual void Stop() = 0;
 
-		virtual int32_t Mount(const boost::filesystem::path& mountdir, const std::string& nzbfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default) = 0;
-		virtual int32_t Unmount(const boost::filesystem::path& mountdir) = 0;
+		virtual int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default) = 0;
+		virtual int32_t Unmount(const std::filesystem::path& mountdir) = 0;
 
 		virtual std::shared_ptr<IDirectory> GetRootDir() = 0;
-		virtual std::shared_ptr<IDirectory> GetDirectory(const boost::filesystem::path& p) = 0;
-		virtual std::shared_ptr<IFile> GetFile(const boost::filesystem::path& p) = 0;
-		virtual std::vector< std::pair<boost::filesystem::path, ContentType> > GetContent() = 0;
-		virtual void EnumFiles(std::function<void(const boost::filesystem::path& path, std::shared_ptr<IFile> file)> callback) = 0;
+		virtual std::shared_ptr<IDirectory> GetDirectory(const std::filesystem::path& p) = 0;
+		virtual std::shared_ptr<IFile> GetFile(const std::filesystem::path& p) = 0;
+		virtual std::vector< std::pair<std::filesystem::path, ContentType> > GetContent() = 0;
+		virtual void EnumFiles(std::function<void(const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback) = 0;
 
 		virtual uint_fast64_t RXBytes() = 0;
 		virtual uint_fast64_t GetTotalNumberOfBytes() const = 0;

@@ -13,7 +13,7 @@
 #include <fstream>
 #include <string>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -42,7 +42,7 @@ public:
 		unsigned long part;
 		unsigned long line;
 		unsigned long long size;
-		boost::filesystem::path name;
+		std::filesystem::path name;
 	};
 
 	struct yPartInfo

@@ -11,25 +11,31 @@
 #include "text_tool.hpp"
 #include <tinyxml2.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <sstream>
 #include <iostream>
+/*
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
+*/
+#define CURL_STATICLIB 
+#include <stdio.h>
+#include <curl/curl.h>
+
 
 namespace ByteFountain
 {
-	using namespace tinyxml2;
+//	using namespace tinyxml2;
 //	using namespace boost::network;
 
-	nzb loadnzb(const std::string& nzbfile, XMLDocument& doc)
+	nzb loadnzb(const std::string& nzbfile, tinyxml2::XMLDocument& doc)
 	{
 
-		XMLHandle hDoc(&doc);
-		XMLElement* pElem;
-		XMLHandle hRoot(0);
+		tinyxml2::XMLHandle hDoc(&doc);
+		tinyxml2::XMLElement* pElem;
+		tinyxml2::XMLHandle hRoot(0);
 
 		// block: nzb
 		{
@@ -42,12 +48,12 @@ namespace ByteFountain
 				throw std::invalid_argument(oss.str());
 			}
 			// save this for later
-			hRoot=XMLHandle(pElem);
+			hRoot= tinyxml2::XMLHandle(pElem);
 		}
 
 		ByteFountain::nzb nzb;
 
-		XMLElement* pElemFile=hRoot.FirstChildElement( "file" ).ToElement();
+		tinyxml2::XMLElement* pElemFile=hRoot.FirstChildElement( "file" ).ToElement();
 		if (!pElemFile)
 		{
 			std::ostringstream oss;
@@ -71,7 +77,7 @@ namespace ByteFountain
 			val=pElemFile->Attribute("date");
 			if (val!=0) file.date=boost::lexical_cast<long>(val);
 
-			XMLElement* pElemGroup=XMLHandle(pElemFile).FirstChildElement( "groups" ).FirstChildElement( "group" ).ToElement();
+			tinyxml2::XMLElement* pElemGroup= tinyxml2::XMLHandle(pElemFile).FirstChildElement( "groups" ).FirstChildElement( "group" ).ToElement();
 			if (!pElemGroup)
 			{
 				std::ostringstream oss;
@@ -83,7 +89,7 @@ namespace ByteFountain
 				file.groups.insert(pElemGroup->GetText());
 			}
 
-			XMLElement* pElemSegment=XMLHandle(pElemFile).FirstChildElement( "segments" ).FirstChildElement( "segment" ).ToElement();
+			tinyxml2::XMLElement* pElemSegment=tinyxml2::XMLHandle(pElemFile).FirstChildElement( "segments" ).FirstChildElement( "segment" ).ToElement();
 			if (!pElemSegment)
 			{
 				std::ostringstream oss;
@@ -106,7 +112,7 @@ namespace ByteFountain
 		return nzb;
 	}
 
-	nzb loadnzb_from_file(const std::string& location, const boost::filesystem::path& nzbfile)
+	nzb loadnzb_from_file(const std::string& location, const std::filesystem::path& nzbfile)
 	{
 #ifdef _MSC_VER
 		FILE* file=0;
@@ -125,9 +131,9 @@ namespace ByteFountain
 			throw std::invalid_argument(oss.str());
 		}
 #endif
-		XMLDocument doc;
+		tinyxml2::XMLDocument doc;
 		auto xmlerr = doc.LoadFile(file);
-		if (xmlerr != XMLError::XML_SUCCESS)
+		if (xmlerr != tinyxml2::XMLError::XML_SUCCESS)
 		{
 			std::ostringstream oss;
 			oss<<"Could not load nzb file: "<<nzbfile<<", error is: "<<doc.ErrorStr()<<std::endl;
@@ -135,8 +141,19 @@ namespace ByteFountain
 		}
 		return loadnzb(location,doc);
 	}
+
+	static std::string write_data_string;
+
+	static size_t write_data(void *contents, size_t size, size_t nmemb, void *stream)
+	{
+		size_t realsize = size * nmemb;
+		write_data_string.append((char*)contents, realsize);
+		return realsize;
+	}
+
 	nzb loadnzb_from_uri(const std::string& location)
 	{
+		/*
 		curlpp::Cleanup myCleanup;
 		
 		curlpp::options::Url myUrl(location);
@@ -148,12 +165,33 @@ namespace ByteFountain
 		myRequest.setOpt(ws);
 		
 		myRequest.perform();
+		*/
+		CURL *curl;
+		CURLcode res;
 
-		std::string strdoc(os.str());
+		curl_global_init(CURL_GLOBAL_DEFAULT);
 
-		XMLDocument doc;
+		curl = curl_easy_init();
+		if (curl) {
+			curl_easy_setopt(curl, CURLOPT_URL, location.c_str());
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+			res = curl_easy_perform(curl);
+			if (res != CURLE_OK)
+				fprintf(stderr, "curl_easy_perform() failed: %s\n",
+					curl_easy_strerror(res));
+
+			curl_easy_cleanup(curl);
+		}
+
+		curl_global_cleanup();
+
+		std::string strdoc(write_data_string);
+
+		tinyxml2::XMLDocument doc;
 		auto xmlerr = doc.Parse(strdoc.c_str());
-		if (xmlerr != XMLError::XML_SUCCESS)
+		if (xmlerr != tinyxml2::XMLError::XML_SUCCESS)
 		{
 			std::ostringstream oss;
 			oss<<"Could not parse file at : "<<location<<", error is: "<<doc.ErrorStr()<<std::endl;
@@ -175,7 +213,7 @@ namespace ByteFountain
 		}
 		else
 		{
-			boost::filesystem::path nzbfile(location);
+			std::filesystem::path nzbfile(location);
 			return loadnzb_from_file(location,nzbfile);
 		}
 	}

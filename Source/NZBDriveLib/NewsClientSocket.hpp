@@ -148,7 +148,11 @@ public:
 		RateLimiterTarget(ios,limiter),
 		m_io_service(ios),
 		m_ssl(ssl), 
-		m_ssl_ctx(m_io_service,ssl_context::sslv23),
+#if BOOST_VERSION >= 106800
+		m_ssl_ctx(ssl_context::sslv23),
+#else
+		m_ssl_ctx(m_io_service, ssl_context::sslv23),
+#endif
 		m_ssl_socket(m_io_service,m_ssl_ctx),
 		m_tcp_socket(m_io_service)
 	{

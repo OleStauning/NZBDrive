@@ -28,7 +28,7 @@ namespace ByteFountain
 	ReadAheadFile::~ReadAheadFile(){};
 	bool ReadAheadFile::IsCompressed() const { return m_file->IsCompressed(); }
 	bool ReadAheadFile::IsPWProtected() const { return m_file->IsPWProtected(); }
-	boost::filesystem::path ReadAheadFile::GetFileName() { return m_file->GetFileName(); }
+	std::filesystem::path ReadAheadFile::GetFileName() { return m_file->GetFileName(); }
 	unsigned long long ReadAheadFile::GetFileSize() { return m_file->GetFileSize(); }
 	bool ReadAheadFile::GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize)
 	{

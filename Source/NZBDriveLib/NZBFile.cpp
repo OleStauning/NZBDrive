@@ -452,7 +452,7 @@ bool NZBFile::ReadSegment(const std::size_t idx, CancelSignal* cancel, const boo
 	return false;
 }
 
-boost::filesystem::path NZBFile::GetFileName()
+std::filesystem::path NZBFile::GetFileName()
 {
 	return m_beginInfo ? m_beginInfo->name : "ERROR";
 }

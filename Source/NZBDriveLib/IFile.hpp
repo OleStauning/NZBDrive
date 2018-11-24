@@ -14,7 +14,7 @@
 #include <functional>
 #include <memory>
 #include <boost/signals2.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -27,7 +27,7 @@ namespace ByteFountain
 		virtual ~IFile(){};
 		virtual bool IsCompressed() const=0;
 		virtual bool IsPWProtected() const=0;
-		virtual boost::filesystem::path GetFileName()=0;
+		virtual std::filesystem::path GetFileName()=0;
 		virtual unsigned long long GetFileSize()=0;
 		virtual bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize) = 0;
 

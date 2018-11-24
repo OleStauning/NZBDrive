@@ -11,7 +11,7 @@
 #include "MultipartFile.hpp"
 #include "IDriveMounter.hpp"
 #include "Logger.hpp"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <ostream>
@@ -29,7 +29,7 @@ public:
 	ZIPFile(const ZIPFile&) = delete;
 	ZIPFile& operator=(const ZIPFile&) = delete;
 
-	ZIPFile(Logger& log, const boost::filesystem::path& path, const std::string& filename, const zip::local_file_header& local_file_header);
+	ZIPFile(Logger& log, const std::filesystem::path& path, const std::string& filename, const zip::local_file_header& local_file_header);
 	virtual ~ZIPFile();
 	
 	bool InternalIsCompressed() const { return m_local_file_header.compression_method!=0; }
@@ -42,12 +42,12 @@ class ZIPFileFactory
 	Logger& m_log;
 	IDriveMounter& m_mounter;
 	
-	typedef std::map<std::pair<boost::filesystem::path,std::string>, std::shared_ptr<ZIPFile> > ZIPFileMap;
+	typedef std::map<std::pair<std::filesystem::path,std::string>, std::shared_ptr<ZIPFile> > ZIPFileMap;
 	ZIPFileMap m_zip_files;
 	
 	struct zip_data
 	{
-		boost::filesystem::path path;
+		std::filesystem::path path;
 		int part;
 		bool err;
 		zip::local_file_header local_file_header;
@@ -60,7 +60,7 @@ class ZIPFileFactory
 public:
 	ZIPFileFactory(Logger& log, IDriveMounter& mounter);
 	
-	bool AddFile(const boost::filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel);
+	bool AddFile(const std::filesystem::path& path, std::shared_ptr<InternalFile> file, IFile::CancelSignal& cancel);
 	
 	void GetZIPLocalFileHeader(std::shared_ptr<zip_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset);
 	void GetFilename(std::shared_ptr<zip_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset);

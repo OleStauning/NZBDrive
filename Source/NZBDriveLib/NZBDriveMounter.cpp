@@ -24,7 +24,7 @@ namespace ByteFountain
 
 	NZBDriveMounter::NZBDriveMounter(NZBMountState& mount_state,
 		NZBDriveIMPL& drv, const bool extract_archives,
-		const boost::filesystem::path& dir, Logger& log,
+		const std::filesystem::path& dir, Logger& log,
 		MountStatusFunction handler) :
 		mstate(mount_state),
 		state(mount_state.state),
@@ -78,9 +78,9 @@ namespace ByteFountain
 		}
 	}
 
-	void NZBDriveMounter::RawInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir)
+	void NZBDriveMounter::RawInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir)
 	{
-		boost::filesystem::path filepath = dir / file->GetFileName();
+		std::filesystem::path filepath = dir / file->GetFileName();
 			
 		logger<<Logger::Debug<<"Registering file: "<<filepath<<Logger::End;
 
@@ -96,13 +96,13 @@ namespace ByteFountain
 		}
 	}
 
-	void NZBDriveMounter::StartInsertFile(std::shared_ptr<InternalFile> file, const boost::filesystem::path& dir)
+	void NZBDriveMounter::StartInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir)
 	{ 
 		if (!m_keep_this_alive) m_keep_this_alive = shared_from_this();
 		
 		parts_total++;
 
-		boost::filesystem::path filename=file->GetFileName();
+		std::filesystem::path filename=file->GetFileName();
 			
 		if (extract_archives && split_file_factory.AddFile(dir,file))
 		{
@@ -119,7 +119,7 @@ namespace ByteFountain
 		}
 		else
 		{
-			filesystem::path filepath;
+			std::filesystem::path filepath;
 			
 			if (file->IsPWProtected())
 			{
@@ -156,10 +156,4 @@ namespace ByteFountain
 			StopInsertFile();
 		}	
 	}
-/*
-	std::shared_ptr<IDriveMounter> NZBDriveMounter::GetSharedPtr()
-	{
-		return shared_from_this();
-	}
-*/	
 }

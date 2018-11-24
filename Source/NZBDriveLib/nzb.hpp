@@ -14,7 +14,7 @@
 #include <set>
 #include <map>
 #include <boost/cstdint.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 namespace ByteFountain
 {
@@ -51,7 +51,7 @@ namespace ByteFountain
 			unsigned int segments_total;
 
 			// NZBDrive ydecoded information:
-			boost::filesystem::path name;
+			std::filesystem::path name;
 			unsigned long long size;
 			
 			// Methods:

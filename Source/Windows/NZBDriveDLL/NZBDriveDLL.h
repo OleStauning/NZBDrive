@@ -90,7 +90,6 @@ namespace NZBDriveDLL
 		int32_t Mount(String^ nzbfile, MountStatusFunction^ callback);
 		int32_t Unmount(String^ nzbfile);
 		property String^ DriveLetter { String^ get(); void set(String^ settings); }
-		property String^ CachePath { String^ get(); void set(String^ settings); }
 		property bool PreCheckSegments { bool get(); void set(bool settings); }
 		property NetworkThrottling Throttling { void set(NetworkThrottling val); }
 		property uint_fast64_t RXBytes { uint_fast64_t get(); }

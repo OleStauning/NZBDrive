@@ -13,7 +13,7 @@
 namespace ByteFountain
 {
 
-	MultipartFile::MultipartFile(Logger& log, const boost::filesystem::path& path, const boost::filesystem::path& filename):
+	MultipartFile::MultipartFile(Logger& log, const std::filesystem::path& path, const std::filesystem::path& filename):
 		m_log(log),
 		m_path(path),
 		m_filename(filename),
@@ -29,7 +29,7 @@ namespace ByteFountain
 		m_parts_map.clear();
 	}
 
-	boost::filesystem::path MultipartFile::GetFileName()
+	std::filesystem::path MultipartFile::GetFileName()
 	{
 		return m_filename;
 	}
