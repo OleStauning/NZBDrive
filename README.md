@@ -2,7 +2,7 @@
 Mount NZB files as drives or folders in Linux or Windows (under construction!).
 
 ## Dependencies
-* C++11 (Visual Studio 2015 on Windows)
+* C++17 (Visual Studio 2017 on Windows)
 * Tinyxml2
 * Openssl
 * Boost libraries:
