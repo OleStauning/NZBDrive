@@ -14,7 +14,7 @@
 #include <boost/algorithm/string.hpp>
 #include <functional>
 #include <fstream>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <queue>
 //#include <google/profiler.h>
 
@@ -67,11 +67,11 @@ int main(int argc, char *argv[])
 	
 	std::string mountpoint(argv[1]);
 
-	if (!boost::filesystem::exists(expand_user("~/.nzbmount")))
+	if (!std::filesystem::exists(expand_user("~/.nzbmount")))
 	{
-		boost::filesystem::create_directory(expand_user("~/.nzbmount"));
+		std::filesystem::create_directory(expand_user("~/.nzbmount"));
 	}
-	if (!boost::filesystem::exists(expand_user("~/.nzbmount/config")))
+	if (!std::filesystem::exists(expand_user("~/.nzbmount/config")))
 	{
 		std::ofstream cf(expand_user("~/.nzbmount/config"));
 		cf<<"cache_keep=no"<<std::endl;
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
 		if (parts_loaded==parts_total)
 		{
 			std::cout<<"FILELIST:"<<std::endl;
-			drive.EnumFiles([](const boost::filesystem::path& path, std::shared_ptr<IFile> file)
+			drive.EnumFiles([](const std::filesystem::path& path, std::shared_ptr<IFile> file)
 			{
 				std::cout<<path;
 				if (file->IsPWProtected())
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
 	{
 		std::replace_if(s.begin(), s.end(), 
                     [&invalid_chars](char c) { return invalid_chars.find(c)!=std::string::npos; }, '_');
-		return boost::filesystem::path(s);
+		return std::filesystem::path(s);
 	};
 	
 	
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		if (input=="quit") break;
-		if (input=="cancel") { drive.Unmount(boost::filesystem::path(nzbfile).stem()); continue; }
+		if (input=="cancel") { drive.Unmount(std::filesystem::path(nzbfile).stem()); continue; }
 		if (input=="dir")
 		{
 			continue;

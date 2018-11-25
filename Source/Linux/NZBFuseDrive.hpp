@@ -11,7 +11,6 @@
 
 #include "NZBDrive.hpp"
 #include "Logger.hpp"
-#include <boost/filesystem.hpp>
 #include <thread>
 #include <string>
 #include <mutex>
@@ -27,7 +26,6 @@ class NZBFuseDrive : public NZBDrive
 {
 	fuse* m_fuse;
 	fuse_chan* m_ch;
-	boost::filesystem::path m_cache_path;
 	std::string m_drivepath;
 	std::thread m_fuseThread;
 	bool m_fuseThreadRunning;

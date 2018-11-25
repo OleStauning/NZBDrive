@@ -9,6 +9,7 @@
 #include "NZBFuseDrive.hpp"
 #include "Logger.hpp"
 #include "IDirectory.hpp"
+#include <filesystem>
 
 #define FUSE_USE_VERSION 26
 #include <fuse.h>
@@ -75,7 +76,7 @@ int nzb_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 		filler(buf, "..", NULL, 0);
 	}
 	
-	std::vector< std::pair<boost::filesystem::path,ContentType> > content=dir->GetContent();
+	std::vector< std::pair<std::filesystem::path,ContentType> > content=dir->GetContent();
 	
 	for(auto element : content)
 	{
@@ -167,7 +168,7 @@ namespace ByteFountain
 	{
 		m_drivepath=drivepath;
 	
-		if (!boost::filesystem::exists("/dev/fuse"))
+		if (!std::filesystem::exists("/dev/fuse"))
 		{
 			m_log<<Logger::Error<<"Could not find /dev/fuse. Make sure the fuse module is loaded"<<Logger::End;
 			throw std::runtime_error("Could not find /dev/fuse. Make sure the fuse module is loaded");

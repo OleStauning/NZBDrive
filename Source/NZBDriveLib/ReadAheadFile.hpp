@@ -22,7 +22,7 @@ namespace ByteFountain
 	class ReadAheadFile : public InternalFile, public std::enable_shared_from_this<ReadAheadFile>
 	{
 		boost::asio::io_service& m_io_service;
-		boost::asio::io_context::strand m_strand;
+		boost::asio::io_service::strand m_strand;
 		Logger& m_logger;
 		std::shared_ptr<InternalFile> m_file;
 		NZBDriveIMPL& m_drive;

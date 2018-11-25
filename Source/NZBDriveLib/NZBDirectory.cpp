@@ -18,25 +18,26 @@ namespace ByteFountain
 		Element& e(content[*i]);
 		i++;
 	
-		if (e.file || (i->empty()&&e.dir)) throw std::invalid_argument("File or path already exists");
-		if (i->empty()) e.file=file;
+		if (e.file || (i==p.end() && e.dir)) throw std::invalid_argument("File or path already exists");
+		if (i==p.end()) e.file=file;
 		else
 		{
 			if (!e.dir) e.dir.reset(new NZBDirectory(m_root_mutex));
-			e.dir->RegisterFile(file,i);
+			e.dir->RegisterFile(file,i,p);
 		}
 	}
-	void NZBDirectory::Unmount(std::filesystem::path::iterator i)
+	void NZBDirectory::Unmount(std::filesystem::path::iterator i, const std::filesystem::path& p)
 	{
-		if (i->string()=="/") i++; // TODO: IMPROVE THIS??
-		if (i->empty())
+		if (i==p.end())
 		{ 
-			for (const auto& element : content)
-			{
-				const Element& e(element.second);
-				if (e.file) e.file->Unmount();
-				if (e.dir) e.dir->Unmount(i);
-			}
+			if (i->string()=="/") Unmount(++i,p);
+			else
+				for (const auto& element : content)
+				{
+					const Element& e(element.second);
+					if (e.file) e.file->Unmount();
+					if (e.dir) e.dir->Unmount(i,p);
+				}
 		}
 		else
 		{
@@ -45,14 +46,14 @@ namespace ByteFountain
 
 			const Element& e(ci->second);
 			i++;
-			if (i->empty())
+			if (i==p.end())
 			{
-				Unmount(i);
+				Unmount(i,p);
 				content.erase(ci);
 			}
 			else
 			{
-				if (e.dir) e.dir->Unmount(i);
+				if (e.dir) e.dir->Unmount(i,p);
 			}
 		}
 	}
@@ -61,40 +62,43 @@ namespace ByteFountain
 		std::unique_lock<std::mutex> lock(m_root_mutex);
 		content.clear();
 	}
-	bool NZBDirectory::Exists(std::filesystem::path::iterator i)
+	bool NZBDirectory::Exists(std::filesystem::path::iterator i, const std::filesystem::path& p)
 	{
-		if (i->string()=="/") i++; // TODO: IMPROVE THIS??
-		if (i->empty()) return false;
+		if (i==p.end()) return false;
+		if (i->string()=="/") return Exists(++i,p);
 		std::map< std::filesystem::path, Element >::const_iterator ci=content.find(*i);
 		if (ci==content.end()) return false;
 		const Element& e(ci->second);
 		i++;
-		if (i->empty()) return true;
-		else if (e.dir) return e.dir->Exists(i);
+		if (i==p.end()) return true;
+		else if (e.dir) return e.dir->Exists(i,p);
 		return false;
 	}
-	std::shared_ptr<NZBDirectory> NZBDirectory::GetDirectory(std::filesystem::path::iterator i)
+	std::shared_ptr<NZBDirectory> NZBDirectory::GetDirectory(std::filesystem::path::iterator i, const std::filesystem::path& p)
 	{
-		if (i->string()=="/") i++; // TODO: IMPROVE THIS??
-		if (i->empty()) return shared_from_this();
+		if (i==p.end()) 
+		{
+			return shared_from_this();
+		}
+		if (i->string()=="/") return GetDirectory(++i,p);
 		std::map< std::filesystem::path, Element >::const_iterator ci=content.find(*i);
 		if (ci==content.end()) return std::shared_ptr<NZBDirectory>();
 		const Element& e(ci->second);
 		i++;
 		if (!e.dir) return e.dir;
-		return e.dir->GetDirectory(i);
+		return e.dir->GetDirectory(i,p);
 	}
-	std::shared_ptr<IFile> NZBDirectory::GetFile(std::filesystem::path::iterator i)
+	std::shared_ptr<IFile> NZBDirectory::GetFile(std::filesystem::path::iterator i, const std::filesystem::path& p)
 	{
-		if (i->string()=="/") i++; // TODO: IMPROVE THIS??
-		if (i->empty()) return std::shared_ptr<IFile>();
+		if (i==p.end()) return std::shared_ptr<IFile>();
+		if (i->string()=="/") return GetFile(++i,p);
 		std::map< std::filesystem::path, Element >::const_iterator ci=content.find(*i);
 		if (ci==content.end()) return std::shared_ptr<IFile>();
 		const Element& e(ci->second);
 		i++;
-		if (i->empty()) return e.file;
+		if (i==p.end()) return e.file;
 		if (!e.dir) return std::shared_ptr<IFile>();
-		return e.dir->GetFile(i);
+		return e.dir->GetFile(i,p);
 	}
 	void NZBDirectory::MyEnumFiles(std::unique_lock<std::mutex>& lock,
 		std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
@@ -115,31 +119,29 @@ namespace ByteFountain
 	}
 	void NZBDirectory::RegisterFile(const std::shared_ptr<IFile>& file, const std::filesystem::path& p)
 	{
-		std::cout<<"Registering file: "<<p<<std::endl;
-		
 		std::unique_lock<std::mutex> lock(m_root_mutex);
 		m_totalNumberOfBytes+=file->GetFileSize();
-		RegisterFile(file,p.begin());
+		RegisterFile(file,p.begin(),p);
 	}
 	std::shared_ptr<IDirectory> NZBDirectory::GetDirectory(const std::filesystem::path& p)
 	{
 		std::unique_lock<std::mutex> lock(m_root_mutex);
-		return GetDirectory(p.begin()); 
+		return GetDirectory(p.begin(),p); 
 	}
 	std::shared_ptr<IFile> NZBDirectory::GetFile(const std::filesystem::path& p)
 	{ 
 		std::unique_lock<std::mutex> lock(m_root_mutex);
-		return GetFile(p.begin()); 
+		return GetFile(p.begin(),p); 
 	}
 	void NZBDirectory::Unmount(const std::filesystem::path& p)
 	{ 
 		std::unique_lock<std::mutex> lock(m_root_mutex);
-		Unmount(p.begin());
+		Unmount(p.begin(), p);
 	}
 	bool NZBDirectory::Exists(const std::filesystem::path& p)
 	{ 
 		std::unique_lock<std::mutex> lock(m_root_mutex);
-		return Exists(p.begin()); 
+		return Exists(p.begin(),p); 
 	}
 	std::vector< std::pair<std::filesystem::path,ContentType> > NZBDirectory::GetContent()
 	{
