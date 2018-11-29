@@ -170,6 +170,12 @@ namespace ByteFountain
 	bool MultipartFile::SetFilePart(const int part, std::shared_ptr<InternalFile> file, const unsigned long long offset, 
 		const unsigned long long size, const bool bof, const bool eof)
 	{
+		if (m_parts.find(part) != m_parts.end())
+		{
+			m_log<<Logger::Debug<<"Filepart "<<file->GetFileName()<<" ("<<part<<") duplicate"<<Logger::End;
+			return true;
+		}
+		
 		m_parts[part].Set(file,offset,size,bof,eof);
 
 		const FilePart& first(m_parts.begin()->second);

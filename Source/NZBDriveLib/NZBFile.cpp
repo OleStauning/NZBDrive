@@ -557,7 +557,7 @@ std::size_t NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf
 
 			auto cached_segment = m_segment_cache.TryGet(m_fileID, idx);
 			
-			m_log << Logger::Info << "SegmentCache.TryGet("<<m_fileID<<", "<<idx<<"): "<<(cached_segment?"found":"not found")<<Logger::End;
+//			m_log << Logger::Info << "SegmentCache.TryGet("<<m_fileID<<", "<<idx<<"): "<<(cached_segment?"found":"not found")<<Logger::End;
 
 			if (!cached_segment)
 			{
@@ -587,9 +587,9 @@ std::size_t NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf
 		}
 	}
 	
-	m_log<<Logger::Info<<"TryGetData: \""<< m_beginInfo->name <<
-		"\", segments [" << lb << ", " << ub << "], out of [0, "<<m_segments.size()<<"], found "<<
-		done.size()<<" segments; ready="<<(ready?"yes":"no")<<Logger::End;
+//	m_log<<Logger::Info<<"TryGetData: \""<< m_beginInfo->name <<
+//		"\", segments [" << lb << ", " << ub << "], out of [0, "<<m_segments.size()<<"], found "<<
+//		done.size()<<" segments; ready="<<(ready?"yes":"no")<<Logger::End;
 			
 
 	if (!ready) return 0;

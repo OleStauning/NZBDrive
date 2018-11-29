@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	
 	std::vector<UsenetServer> servers;
 
-	LogLineLevel log_level = LogLineLevel::Debug;
+	LogLineLevel log_level = LogLineLevel::Info;
 	
 	NetworkThrottling shape;;
 	
@@ -305,6 +305,7 @@ int main(int argc, char *argv[])
 		{
 			std::string nzbfile = nzbqueue.front();
 			nzbqueue.pop();
+			std::cout<<"Mounting: "<<nzbfile<<std::endl;
 			drive.Mount(MountDir(nzbfile),nzbfile,onMountStatus);
 		}
 	};

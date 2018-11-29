@@ -178,7 +178,7 @@ namespace
 	void RARFileFactory::GetMainHeader(std::shared_ptr<rar_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset](const std::size_t readsize)
+			[this, file, data, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 //				std::cout<<"MAINHEAD "<<readsize<<std::endl;
 				if (readsize!=sizeof(rar::main_head) || !rar::Validate(data->main_head))
@@ -186,8 +186,6 @@ namespace
 					m_log<<Logger::Error<<"Invalid RAR MAIN-HEADER"<<Logger::End;
 //					rar::print(std::cout,data->main_head);
 					data->err=FileErrorFlag::InvalidRARFile;
-//					data->m_mounter.StopInsertFile();
-					m_mounter.StopInsertFile();
 					return;
 				}
 				GetMarkHead(data,file,offset+readsize);
@@ -198,7 +196,7 @@ namespace
 	void RARFileFactory::GetFileHeader(std::shared_ptr<rar_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset, const unsigned char header_type)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset, header_type](const std::size_t readsize)
+			[this, file, data, offset, header_type, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 //				std::cout<<"FILEHEAD "<<readsize<<std::endl;
 				if (readsize!=sizeof(rar::file_head) || !rar::Validate(data->file_head,header_type))
@@ -206,7 +204,6 @@ namespace
 					m_log<<Logger::Error<<"Invalid RAR FILE-HEADER"<<Logger::End;
 //					rar::print(std::cout,data->file_head);
 					data->err=FileErrorFlag::InvalidRARFile;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				
@@ -229,13 +226,12 @@ namespace
 		const unsigned char header_type)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset, header_type](const std::size_t readsize)
+			[this, file, data, offset, header_type, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=sizeof(rar::high_size))
 				{
 					m_log<<Logger::Error<<"Invalid RAR HIGH-SIZE"<<Logger::End;
 					data->err=FileErrorFlag::InvalidRARFile;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				GetFilename(data,file,offset+readsize,header_type);
@@ -248,13 +244,12 @@ namespace
 	{
 		data->txtfilename.resize(data->file_head.name_size);
 		file->AsyncGetFileData(
-			[this, file, data, offset, header_type](const std::size_t readsize)
+			[this, file, data, offset, header_type, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=data->file_head.name_size)
 				{
 //					std::cout<<"ERROR: Invalid FILENAME"<<std::endl;
 					data->err=FileErrorFlag::InvalidRARFile;
-					m_mounter.StopInsertFile();
 					return;
 				}
 //				std::cout<<"FILENAME="<<data->filename<<std::endl;
@@ -335,12 +330,6 @@ namespace
 //					std::cout<<"Get next rar-header"<<std::endl;
 					GetMarkHead(data,file,data->data_begin+data->file_head.pack_size);
 				}
-				else
-				{
-					m_mounter.StopInsertFile();//Don't read further in this file if last file in rar was !EOF
-					                  // and continues in the next volume.
-				}
-				
 			}
 		,(char*)&data->txtfilename[0],offset,data->file_head.name_size,data->cancel,true );
 		
@@ -350,14 +339,13 @@ namespace
 	void RARFileFactory::GetMarkHead(std::shared_ptr<rar_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset](const std::size_t readsize)
+			[this, file, data, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 //				std::cout<<"MARKHEAD "<<readsize<<std::endl;
 				if (readsize!=sizeof(rar::mark_head)) // NOTE: DO not validate mark-head since it can be another headertype.
 				{
 					m_log<<Logger::Error<<"Invalid RAR MARK-HEADER"<<Logger::End;
 					data->err=FileErrorFlag::InvalidRARFile;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				switch(data->mark_head.header_type)
@@ -373,7 +361,6 @@ namespace
 							file->SetPWProtected(true);
 							file->SetErrorFlag(FileErrorFlag::FileEncrypted);
 							m_mounter.RawInsertFile(file,data->rawpath);
-							m_mounter.StopInsertFile();
 						}
 						else
 						{
@@ -391,7 +378,6 @@ namespace
 					case /*HEAD_TYPE=*/0x79://          old style authenticity information
 						m_log<<Logger::Error<<"OLD RAR FILE WITH HEAD_TYPE="<<std::hex<<
 						(int)data->mark_head.header_type<<std::dec<<Logger::End;
-						m_mounter.StopInsertFile();
 						break;
 					case /*HEAD_TYPE=*/0x7a://          subblock
 //						std::cout<<"Sub block ( FILEHEADER ?? )"<<std::endl;
@@ -399,14 +385,12 @@ namespace
 						break;
 					case /*HEAD_TYPE=*/0x7b://          archive end
 //						std::cout<<"ARCHIVE END "<<offset+head->head_size<<std::endl;
-						m_mounter.StopInsertFile();
 						break;
 					default:
 						m_log<<Logger::Error<<"UNKNOWN HEADER TYPE 0x"<<
 							std::hex<<(int)data->mark_head.header_type<<
 							std::dec<<" AT OFFSET "<<offset<<Logger::End;
 //						rar::print(std::cout,data->mark_head);
-						m_mounter.StopInsertFile();
 						break;
 				}
 			}
@@ -418,14 +402,13 @@ namespace
 	{
 		std::shared_ptr<rar::sub_block> sblock = std::shared_ptr<rar::sub_block>(new rar::sub_block());
 		file->AsyncGetFileData(
-			[this, file, data, sblock, offset](const std::size_t readsize)
+			[this, file, data, sblock, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=sizeof(rar::sub_block) || !rar::Validate(*sblock))
 				{
 					m_log<<Logger::Error<<"Invalid RAR SUB-BLOCK"<<Logger::End;
 //					rar::print(std::cout,*sblock.get());
 					data->err=FileErrorFlag::InvalidRARFile;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				

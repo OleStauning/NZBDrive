@@ -84,14 +84,13 @@ namespace
 		const unsigned long long offset)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset](const std::size_t readsize)
+			[this, file, data, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=sizeof(zip::local_file_header) || !zip::Validate(data->local_file_header))
 				{
 					m_log<<Logger::Error<<"Invalid ZIP-LOCAL-FILE-HEADER"<<Logger::End;
 //					zip::print(std::cout,data->local_file_header);
 					data->err=true;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				zip::print(std::cout,data->local_file_header);
@@ -109,13 +108,12 @@ namespace
 	{
 		data->filename.resize(data->local_file_header.file_name_length);
 		file->AsyncGetFileData(
-			[this, file, data, offset](const std::size_t readsize)
+			[this, file, data, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=data->local_file_header.file_name_length)
 				{
 					m_log<<Logger::Error<<"Invalid ZIP FILENAME"<<Logger::End;
 					data->err=true;
-					m_mounter.StopInsertFile();
 					return;
 				}
 //				std::cout<<"FILENAME="<<data->filename<<std::endl;
@@ -159,22 +157,17 @@ namespace
 	void ZIPFileFactory::GetZIPNextFileHeader(std::shared_ptr<zip_data> data, std::shared_ptr<InternalFile> file, const unsigned long long offset)
 	{
 		file->AsyncGetFileData(
-			[this, file, data, offset](const std::size_t readsize)
+			[this, file, data, offset, scope = m_mounter.NewPartScope()](const std::size_t readsize)
 			{
 				if (readsize!=sizeof(unsigned int))
 				{
 					m_log<<Logger::Error<<"Invalid ZIP HEADER_SIGNATURE"<<Logger::End;
 					data->err=true;
-					m_mounter.StopInsertFile();
 					return;
 				}
 				if (data->next_header_signature==0x04034b50)
 				{
 					GetZIPLocalFileHeader(data,file,offset);
-				}
-				else
-				{
-					m_mounter.StopInsertFile();
 				}
 				
 			}

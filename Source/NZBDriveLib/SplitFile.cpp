@@ -103,7 +103,7 @@ using namespace boost::xpressive;
 				splitFile->SetFilePart(part.first,part.second,0,part.second->GetFileSize(),bof,eof);
 			}
 
-			splitFile->Finalize();
+//			splitFile->Finalize();
 
 			if (complete) // Only register split-file if all parts are present:
 			{

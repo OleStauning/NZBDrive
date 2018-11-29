@@ -410,7 +410,7 @@ namespace ByteFountain
 
 		ResetHandlers();
 	}
-
+	
 	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const std::filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
 	{
 		bool exctract_archives = (mountOptions & MountOptions::DontExtractArchives) == MountOptions::Default;
@@ -429,75 +429,17 @@ namespace ByteFountain
 			}
 			
 			auto& mountState = emplacePair.first->second;
+						
+			drive_mounter = std::make_shared<NZBDriveMounter>(m_io_service, *this, m_logger, m_clients, m_segment_cache,  m_root_dir, m_root_rawdir,
+				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction, 
+				mountStatusFunction, mountState, mountdir, exctract_archives);
 			
-			drive_mounter = std::make_shared<NZBDriveMounter>(mountState, *this, exctract_archives, mountdir, m_log, mountStatusFunction);
 		}
 
 		SendEvent(m_nzbFileOpenFunction, nzbID, mountdir);
 
-		for (const nzb::file& nzbfile : mountfile.files)
-		{
-			int32_t fileID = m_fileCount++;
-
-			std::shared_ptr<NZBFile> file(
-				new NZBFile(m_io_service, nzbID, fileID, nzbfile, m_clients, m_segment_cache, m_log,
-				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction)
-				);
-
-			drive_mounter->parts_total++;
-
-//			m_log << Logger::Info << "AsyncGetFilename Called: " << file << Logger::End;
-			
-			file->AsyncGetFilename(
-				[file, drive_mounter, mountdir, this](const std::filesystem::path& filename)
-			{
-//				m_log << Logger::Info << "AsyncGetFilename Returns: " << file << Logger::End;
-
-				if (0 != ((FileErrorFlags)file->GetErrorFlags() & (FileErrorFlags)FileErrorFlag::CacheFileError))
-				{
-					if (drive_mounter->state == NZBMountState::Mounting)
-					{
-						m_log << Logger::PopupError << "Failed to allocate cache-file. Mounting of " << mountdir << " will not succeed.\nPlease free some disk-space and try again." << Logger::End;
-//						Unmount(mountdir);
-					}
-					drive_mounter->StopInsertFile();
-				}
-				else if (filename.empty())
-				{
-					for (int n = 1; true; ++n)
-					{
-						std::ostringstream oss;
-						oss << "ErrorFile" << n;
-						if (!m_root_dir->Exists(drive_mounter->mountdir / oss.str()))
-						{
-							m_log << Logger::Error << "Could not read filename, using filename " <<
-								oss.str() << " instead" << Logger::End;
-							drive_mounter->errors++;
-							drive_mounter->StartInsertFile(file, drive_mounter->mountdir / oss.str());
-							break;
-						}
-					}
-				}
-				else
-				{
-					try
-					{
-						m_root_rawdir->RegisterFile(file, drive_mounter->mountdir / filename);
-					}
-					catch (std::exception& e)
-					{
-						m_log << Logger::Error << "Error when registering file: " << e.what() << Logger::End;
-						drive_mounter->errors++;
-					}
-					drive_mounter->StartInsertFile(file, drive_mounter->mountdir);
-				}
-				drive_mounter->StopInsertFile();
-				
-//				m_log << Logger::Info <<  drive_mounter.use_count() << Logger::End;
-			}, 
-			&drive_mounter->cancel);
-		}
-
+		drive_mounter->Mount(mountfile);
+		
 		return nzbID;
 	}
 

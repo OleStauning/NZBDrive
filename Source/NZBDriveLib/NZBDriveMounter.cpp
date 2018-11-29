@@ -12,6 +12,7 @@
 #include "Logger.hpp"
 #include "ReadAheadFile.hpp"
 
+
 namespace ByteFountain
 {
 
@@ -22,100 +23,115 @@ namespace ByteFountain
 		if (h) h(std::forward<TArgs>(args)...);
 	}
 
-	NZBDriveMounter::NZBDriveMounter(NZBMountState& mount_state,
-		NZBDriveIMPL& drv, const bool extract_archives,
-		const std::filesystem::path& dir, Logger& log,
-		MountStatusFunction handler) :
-		mstate(mount_state),
-		state(mount_state.state),
-		cancel(mount_state.cancel),
-		nzbID(mount_state.nzbID),
-		drive(drv),
-		extract_archives(extract_archives),
-		logger(log),
-		mountdir(dir),
-		mountStatusFunction(handler),
-		split_file_factory(log,*this),
-		rar_file_factory(log,*this),
-		zip_file_factory(log,*this),
-		finalizing(false),
-		parts_loaded(0),
-		parts_total(0),
-		errors(0)
+	NZBDriveMounter::NZBDriveMounter(
+		boost::asio::io_service& io_service,
+		NZBDriveIMPL& drive,
+		Logger& logger,
+		NewsClientCache& clients,
+		SegmentCache& segment_cache,
+		std::shared_ptr<NZBDirectory>& root_dir,
+		std::shared_ptr<NZBDirectory>& root_rawdir,
+		NZBFileAddedFunction fileAddedFunction,
+		NZBFileInfoFunction fileInfoFunction,
+		NZBFileSegmentStateChangedFunction fileSegmentStateChangedFunction,
+		NZBFileRemovedFunction fileRemovedFunction,
+		MountStatusFunction mountStatusFunction,
+		NZBMountState& mstate,
+		const std::filesystem::path mountdir,
+		bool extract_archives):
+			m_io_service(io_service),
+			m_drive(drive),
+			m_logger(logger),
+			m_clients(clients),
+			m_segment_cache(segment_cache),
+			m_root_dir(root_dir),
+			m_root_rawdir(root_rawdir),
+			m_fileAddedFunction(fileAddedFunction),
+			m_fileInfoFunction(fileInfoFunction),
+			m_fileSegmentStateChangedFunction(fileSegmentStateChangedFunction),
+			m_fileRemovedFunction(fileRemovedFunction),
+			m_mountStatusFunction(mountStatusFunction),
+			m_mstate(mstate),
+			m_state(mstate.state),
+			m_cancel(mstate.cancel),
+			m_nzbID(mstate.nzbID),
+			m_mountdir(mountdir),
+			m_split_file_factory(logger, *this),
+			m_rar_file_factory(logger, *this),
+			m_zip_file_factory(logger, *this),
+			m_parts_loaded(0),
+			m_parts_total(0),
+			m_errors(0),
+			m_extract_archives(extract_archives)
 	{
-		logger<<Logger::Debug<<"Mounting "<<mountdir<<Logger::End;
+		m_logger<<Logger::Debug<<"Mounting "<<m_mountdir<<Logger::End;
 	}
+
+
+	void NZBDriveMounter::PartIdentified()
+	{
+		m_parts_total++;
+	}
+	void NZBDriveMounter::PartFinalized()
+	{
+		m_parts_loaded++;
+		SendEvent(m_mountStatusFunction, m_nzbID, m_parts_loaded, m_parts_total);
+	}
+	
+	NZBDriveMounterScope NZBDriveMounter::NewPartScope()
+	{
+		return NZBDriveMounterScope(shared_from_this());
+	}
+	
 		
 	NZBDriveMounter::~NZBDriveMounter()
 	{
-		logger<<Logger::Info<<"Done mounting "<<mountdir<<Logger::End;
-	}
+		m_split_file_factory.Finalize();
+		m_rar_file_factory.Finalize();
+		m_zip_file_factory.Finalize();
+		m_state = NZBMountState::Mounted;
 
-	void NZBDriveMounter::StopInsertFile()
-	{
-		auto keep_this_alive = shared_from_this();
-			
-		parts_loaded++;
+		if (m_state != NZBMountState::Canceling)
+		{
+			SendEvent(m_mountStatusFunction, m_nzbID, m_parts_loaded, m_parts_total);
+		}
 
-		if (!finalizing && parts_loaded==parts_total)
-		{
-			logger<<Logger::Debug<<"Finalizing"<<Logger::End;
-			finalizing=true;
-			split_file_factory.Finalize();
-			rar_file_factory.Finalize();
-			zip_file_factory.Finalize();
-			finalizing=false;
-			state = NZBMountState::Mounted;
-		}
-		if (!finalizing && state != NZBMountState::Canceling)
-		{
-			SendEvent(mountStatusFunction, nzbID, parts_loaded, parts_total);
-		}
-		if (parts_loaded==parts_total)
-		{
-			mountStatusFunction = nullptr;
-			m_keep_this_alive.reset();
-		}
+		m_logger<<Logger::Info<<"Done mounting "<<m_mountdir<<Logger::End;
 	}
 
 	void NZBDriveMounter::RawInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir)
 	{
 		std::filesystem::path filepath = dir / file->GetFileName();
 			
-		logger<<Logger::Debug<<"Registering file: "<<filepath<<Logger::End;
+		m_logger<<Logger::Debug<<"Registering file: "<<filepath<<Logger::End;
 
-		errors|=file->GetErrorFlags();
+		m_errors|=file->GetErrorFlags();
 
-		if (drive.m_root_dir->Exists(filepath))
+		if (m_root_dir->Exists(filepath))
 		{
-			logger<<Logger::Info<<"Already exists: "<<filepath<<Logger::End;
+			m_logger<<Logger::Info<<"Already exists: "<<filepath<<Logger::End;
 		}
 		else
 		{
-			drive.m_root_dir->RegisterFile(file,filepath);
+			m_root_dir->RegisterFile(file,filepath);
 		}
 	}
 
 	void NZBDriveMounter::StartInsertFile(std::shared_ptr<InternalFile> file, const std::filesystem::path& dir)
 	{ 
-		if (!m_keep_this_alive) m_keep_this_alive = shared_from_this();
-		
-		parts_total++;
-
 		std::filesystem::path filename=file->GetFileName();
 			
-		if (extract_archives && split_file_factory.AddFile(dir,file))
+		if (m_extract_archives && m_split_file_factory.AddFile(dir,file))
 		{
-			logger<<Logger::Debug<<"File was a split file: "<<dir/filename<<Logger::End;
-			StopInsertFile();
+			m_logger<<Logger::Debug<<"File was a split file: "<<dir/filename<<Logger::End;
 		}
-		else if (extract_archives && rar_file_factory.AddFile(dir,file,cancel))
+		else if (m_extract_archives && m_rar_file_factory.AddFile(dir,file,m_cancel))
 		{
-			logger<<Logger::Debug<<"File was a rar file: "<<dir/filename<<Logger::End;
+			m_logger<<Logger::Debug<<"File was a rar file: "<<dir/filename<<Logger::End;
 		}
-		else if (extract_archives && zip_file_factory.AddFile(dir,file,cancel))
+		else if (m_extract_archives && m_zip_file_factory.AddFile(dir,file,m_cancel))
 		{
-			logger<<Logger::Debug<<"File was a zip file: "<<dir/filename<<Logger::End;
+			m_logger<<Logger::Debug<<"File was a zip file: "<<dir/filename<<Logger::End;
 		}
 		else
 		{
@@ -123,14 +139,14 @@ namespace ByteFountain
 			
 			if (file->IsPWProtected())
 			{
-				logger<<Logger::Warning<<"Adding '.pwprotected' to the name of password protected file: "
+				m_logger<<Logger::Warning<<"Adding '.pwprotected' to the name of password protected file: "
 					<<dir/filename<<""<<Logger::End;
 
 				filepath=dir/(filename.string() + ".pwprotected");
 			}
 			else if (file->IsCompressed())
 			{
-				logger<<Logger::Warning<<"Adding '.compressed' to the name of compressed file: "
+				m_logger<<Logger::Warning<<"Adding '.compressed' to the name of compressed file: "
 					<<dir/filename<<""<<Logger::End;
 
 				filepath=dir/(filename.string() + ".compressed");
@@ -138,22 +154,82 @@ namespace ByteFountain
 			else
 			{
 				filepath=dir/filename;
-				logger<<Logger::Debug<<"Mounting file: "<<filepath<<Logger::End;
+				m_logger<<Logger::Debug<<"Mounting file: "<<filepath<<Logger::End;
 			}
 
-			errors|=file->GetErrorFlags();
+			m_errors|=file->GetErrorFlags();
 
-			if (drive.m_root_dir->Exists(filepath))
+			if (m_root_dir->Exists(filepath))
 			{
-				logger<<Logger::Debug<<"Already exists: "<<filepath<<Logger::End;
+				m_logger<<Logger::Debug<<"Already exists: "<<filepath<<Logger::End;
 			}
 			else
 			{
 				// Wrap file in read-ahead file:
-				std::shared_ptr<IFile> rafile(new ReadAheadFile(drive.m_io_service,logger,file,drive));
-				drive.m_root_dir->RegisterFile(rafile,filepath);
+				std::shared_ptr<IFile> rafile(new ReadAheadFile(m_io_service,m_logger,file,m_drive));
+				m_root_dir->RegisterFile(rafile,filepath);
 			}
-			StopInsertFile();
 		}	
+	}
+	
+	void NZBDriveMounter::Mount(const nzb& mountfile)
+	{
+		for (const nzb::file& nzbfile : mountfile.files)
+		{
+			int32_t fileID = m_drive.m_fileCount++;
+
+			std::shared_ptr<NZBFile> file(
+				new NZBFile(m_io_service, m_nzbID, fileID, nzbfile, m_clients, m_segment_cache, m_logger,
+				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction)
+				);
+
+//			m_log << Logger::Info << "AsyncGetFilename Called: " << file << Logger::End;
+			
+			file->AsyncGetFilename(
+				[file, this, scope = NewPartScope()](const std::filesystem::path& filename)
+			{
+//				m_log << Logger::Info << "AsyncGetFilename Returns: " << file << Logger::End;
+
+				if (0 != ((FileErrorFlags)file->GetErrorFlags() & (FileErrorFlags)FileErrorFlag::CacheFileError))
+				{
+					if (m_state == NZBMountState::Mounting)
+					{
+						m_logger << Logger::PopupError << "Failed to allocate cache-file. Mounting of " << m_mountdir << " will not succeed.\nPlease free some disk-space and try again." << Logger::End;
+					}
+				}
+				else if (filename.empty())
+				{
+					for (int n = 1; true; ++n)
+					{
+						std::ostringstream oss;
+						oss << "ErrorFile" << n;
+						if (!m_root_dir->Exists(m_mountdir / oss.str()))
+						{
+							m_logger << Logger::Error << "Could not read filename, using filename " <<
+								oss.str() << " instead" << Logger::End;
+							m_errors++;
+							StartInsertFile(file, m_mountdir / oss.str());
+							break;
+						}
+					}
+				}
+				else
+				{
+					try
+					{
+						m_root_rawdir->RegisterFile(file, m_mountdir / filename);
+					}
+					catch (std::exception& e)
+					{
+						m_logger << Logger::Error << "Error when registering file: " << e.what() << Logger::End;
+						m_errors++;
+					}
+					StartInsertFile(file, m_mountdir);
+				}
+//				m_logger << Logger::Info <<  drive_mounter.use_count() << Logger::End;
+			}, 
+			&m_cancel);
+		}
+
 	}
 }

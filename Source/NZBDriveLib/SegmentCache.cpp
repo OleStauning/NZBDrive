@@ -94,7 +94,7 @@ std::shared_ptr<CachedSegment> SegmentCache::Create(int32_t fileId, int segmentI
 		{
 			const auto itseg = m_segments.find(*itkey);
 			const auto& segptr = itseg->second;
-			m_logger << Logger::Info << "   Looking for unused segment key=("<<itkey->FileId<<", "<<itkey->SegmentIdx<<") Usage "<< segptr.use_count() << Logger::End;
+//			m_logger << Logger::Info << "   Looking for unused segment key=("<<itkey->FileId<<", "<<itkey->SegmentIdx<<") Usage "<< segptr.use_count() << Logger::End;
 			if (segptr.use_count() == 1)
 			{
 				segment = segptr;
