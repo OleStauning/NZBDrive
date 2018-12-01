@@ -20,15 +20,21 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 */
+/*
 #define CURL_STATICLIB 
 #include <stdio.h>
 #include <curl/curl.h>
+*/
+#include "HTTPDownloader.hpp"
+#include <boost/regex.hpp>
 
 
 namespace ByteFountain
 {
 //	using namespace tinyxml2;
 //	using namespace boost::network;
+	
+	boost::regex expr_http{"(?i)http(s?):\\/\\/((?:www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6})(?::(\\d+))?\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)$"};
 
 	nzb loadnzb(const std::string& nzbfile, tinyxml2::XMLDocument& doc)
 	{
@@ -151,43 +157,14 @@ namespace ByteFountain
 		return realsize;
 	}
 
-	nzb loadnzb_from_uri(const std::string& location)
+	nzb loadnzb_from_uri(const std::string& location, const bool usessl, const std::string& host, const std::string& port, const std::string& path)
 	{
-		/*
-		curlpp::Cleanup myCleanup;
+		std::string strdoc;
 		
-		curlpp::options::Url myUrl(location);
-		curlpp::Easy myRequest;
-		myRequest.setOpt(myUrl);
-		
-		std::ostringstream os;
-		curlpp::options::WriteStream ws(&os);
-		myRequest.setOpt(ws);
-		
-		myRequest.perform();
-		*/
-		CURL *curl;
-		CURLcode res;
-
-		curl_global_init(CURL_GLOBAL_DEFAULT);
-
-		curl = curl_easy_init();
-		if (curl) {
-			curl_easy_setopt(curl, CURLOPT_URL, location.c_str());
-			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-			res = curl_easy_perform(curl);
-			if (res != CURLE_OK)
-				fprintf(stderr, "curl_easy_perform() failed: %s\n",
-					curl_easy_strerror(res));
-
-			curl_easy_cleanup(curl);
-		}
-
-		curl_global_cleanup();
-
-		std::string strdoc(write_data_string);
+		if (usessl)
+			strdoc = HTTPDownloader::LoadHTTPS(host, port, path);
+		else
+			strdoc = HTTPDownloader::LoadHTTP(host, port, path);
 
 		tinyxml2::XMLDocument doc;
 		auto xmlerr = doc.Parse(strdoc.c_str());
@@ -200,16 +177,20 @@ namespace ByteFountain
 
 		return loadnzb(location,doc);
 	}
-
 	nzb loadnzb(const std::string& location)
 	{
-
-		if (
-			location.compare(0,7,"http://")==0 ||
-			location.compare(0,8,"https://")==0
-		)
+		boost::match_results<std::string::const_iterator> what;
+		
+		if (boost::regex_search(location, what, expr_http))
 		{
-			return loadnzb_from_uri(location);
+			bool usessl = what[1].first<what[1].second;			
+			std::string host(what[2].first,what[2].second);
+			std::string port(what[3].first,what[3].second);
+			std::string path(what[4].first,what[4].second);
+			
+			if (port.length()==0) port="80";
+			
+			return loadnzb_from_uri(location, usessl, host, port, path);
 		}
 		else
 		{

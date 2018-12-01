@@ -25,7 +25,6 @@
 #include <condition_variable>
 #include <boost/asio.hpp>
 #include <filesystem>
-#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include "SegmentCache.hpp"
 
