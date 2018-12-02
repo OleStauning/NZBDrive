@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="ConnectionState.hpp" />
     <ClInclude Include="ContentType.hpp" />
+    <ClInclude Include="HTTPDownloader.hpp" />
     <ClInclude Include="IArticleStreamHandler.hpp" />
     <ClInclude Include="IDirectory.hpp" />
     <ClInclude Include="IDriveMounter.hpp" />
@@ -60,6 +61,7 @@
     <ClInclude Include="zip_structs.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HTTPDownloader.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MultipartFile.cpp" />
     <ClCompile Include="NewsClient.cpp" />

@@ -31,15 +31,14 @@ struct IDriveMounter
 class NZBDriveMounterScope 
 {
 private:
-	std::shared_ptr<IDriveMounter> m_sharedptr;
+	mutable std::shared_ptr<IDriveMounter> m_sharedptr;
 public:
 	NZBDriveMounterScope():m_sharedptr()
 	{
 	}
-	NZBDriveMounterScope(NZBDriveMounterScope& other)
+	NZBDriveMounterScope(const NZBDriveMounterScope& other):
+		m_sharedptr(std::move(other.m_sharedptr))
 	{
-		m_sharedptr=std::move(other.m_sharedptr);
-		
 	}
 	NZBDriveMounterScope(NZBDriveMounterScope&& other):
 		m_sharedptr(std::move(other.m_sharedptr))

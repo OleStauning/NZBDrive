@@ -106,16 +106,16 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.1;$(SolutionDir)\..\..\curl32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\stage\lib;C:\Program Files\Dokan\Dokan Library-1.2.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_chrono-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_system-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_thread-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_chrono-vc141-mt-gd-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_system-vc141-mt-gd-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_thread-vc141-mt-gd-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 xcopy /Y "$(SolutionDir)\..\..\openssl\$(PlatformTarget)\bin\lib*.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "C:\Program Files\Dokan\Dokan Library-1.2.0\x86\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -131,16 +131,16 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.1;$(SolutionDir)\..\..\curl64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\stage\lib;C:\Program Files\Dokan\Dokan Library-1.2.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_chrono-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_system-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_thread-vc140-mt-gd-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_chrono-vc141-mt-gd-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_system-vc141-mt-gd-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_thread-vc141-mt-gd-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 xcopy /Y "$(SolutionDir)\..\..\openssl\$(PlatformTarget)\bin\lib*.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "C:\Program Files\Dokan\Dokan Library-1.2.0\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -155,17 +155,16 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib32-msvc-14.1;$(SolutionDir)\..\..\curl32\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\stage\lib;C:\Program Files\Dokan\Dokan Library-1.2.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.0</Version>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_chrono-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_system-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib32-msvc-14.0\boost_thread-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_chrono-vc141-mt-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_system-vc141-mt-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_thread-vc141-mt-x32-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 xcopy /Y "$(SolutionDir)\..\..\openssl\$(PlatformTarget)\bin\lib*.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-</Command>
+xcopy /Y "C:\Program Files\Dokan\Dokan Library-1.2.0\x86\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -179,16 +178,16 @@ xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dl
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;libcurl.a</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\lib64-msvc-14.1;$(SolutionDir)\..\..\curl64\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>dokan1.lib;libssl.lib;libcrypto.lib;NZBDriveLib.lib;NZBDokanDriveLib.lib;Advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OutDir);$(SolutionDir)\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration);$(SolutionDir)\..\..\openssl\$(PlatformTarget)\lib;$(SolutionDir)\..\..\boost\stage\lib;C:\Program Files\Dokan\Dokan Library-1.2.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Version>1.1</Version>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_chrono-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_system-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\boost\lib64-msvc-14.0\boost_thread-vc140-mt-1_63.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+      <Command>xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_chrono-vc141-mt-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_system-vc141-mt-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "$(SolutionDir)\..\..\boost\stage\lib\boost_thread-vc141-mt-x64-1_69.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 xcopy /Y "$(SolutionDir)\..\..\openssl\$(PlatformTarget)\bin\lib*.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
-xcopy /Y "$(SolutionDir)\..\..\dokany\$(PlatformName)\$(Configuration)\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
+xcopy /Y "C:\Program Files\Dokan\Dokan Library-1.2.0\dokan1.dll" "$(SolutionDir)\$(PlatformTarget)\$(Configuration)"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

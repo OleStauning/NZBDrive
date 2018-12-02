@@ -90,21 +90,6 @@ namespace NZBDrive.Model
             get { return (int)LogLevel; }
             set { LogLevel = (LogLevel)value; }
         }
-
-        new public string CachePath
-        {
-            get { return base.CachePath; }
-            set 
-            {
-                if (value != base.CachePath)
-                {
-                    base.CachePath = value;
-                    _nzbDrive.CachePath = value;
-                    FireChangedEvent();
-                    OnPropertyChanged();
-                }
-            }
-        }
         
         new public char DriveLetter
         {
