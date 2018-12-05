@@ -261,6 +261,14 @@ namespace ByteFountain
 
 	void NZBFuseDrive::StopFuse()
 	{
+#ifndef WINDOWS_FUSE
+		std::string cmd("fusermount -u -z "+m_drivepath);
+		if (::system(cmd.c_str())==-1)
+		{
+			m_log<<Logger::Error<<"Command \"fusermount\" failed"<<Logger::End;
+		}
+#endif
+
 		if (m_fuse) fuse_exit(m_fuse);
 
 		auto t0 = std::chrono::high_resolution_clock::now();
