@@ -91,11 +91,6 @@ namespace ByteFountain
 		m_zip_file_factory.Finalize();
 		m_state = NZBMountState::Mounted;
 
-		if (m_state != NZBMountState::Canceling)
-		{
-			SendEvent(m_mountStatusFunction, m_nzbID, m_parts_loaded, m_parts_total);
-		}
-
 		m_logger<<Logger::Info<<"Done mounting "<<m_mountdir<<Logger::End;
 	}
 

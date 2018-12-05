@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBDokanDriveLib", "Windows\NZBDokanDriveLib\NZBDokanDriveLib.vcxproj", "{F75EDD69-ECD9-4102-812E-3121676898E3}"
 EndProject
@@ -17,6 +17,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NZBDrive", "Windows\NZBDriv
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBDriveLib", "NZBDriveLib\NZBDriveLib.vcxproj", "{13B3E8BA-6050-4532-8AB4-2D4E891A11BC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBFuseDrive", "NZBFuseDrive\NZBFuseDrive.vcxproj", "{9C6EA072-FCBF-4751-912D-D8DC398DABE6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NZBMounter", "NZBMounter\NZBMounter.vcxproj", "{283F3735-1818-4F46-807F-334AD32EC327}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6} = {9C6EA072-FCBF-4751-912D-D8DC398DABE6}
+		{13B3E8BA-6050-4532-8AB4-2D4E891A11BC} = {13B3E8BA-6050-4532-8AB4-2D4E891A11BC}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,8 +66,27 @@ Global
 		{13B3E8BA-6050-4532-8AB4-2D4E891A11BC}.Release|x64.Build.0 = Release|x64
 		{13B3E8BA-6050-4532-8AB4-2D4E891A11BC}.Release|x86.ActiveCfg = Release|Win32
 		{13B3E8BA-6050-4532-8AB4-2D4E891A11BC}.Release|x86.Build.0 = Release|Win32
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Debug|x64.ActiveCfg = Debug|x64
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Debug|x64.Build.0 = Debug|x64
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Debug|x86.ActiveCfg = Debug|Win32
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Debug|x86.Build.0 = Debug|Win32
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Release|x64.ActiveCfg = Release|x64
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Release|x64.Build.0 = Release|x64
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Release|x86.ActiveCfg = Release|Win32
+		{9C6EA072-FCBF-4751-912D-D8DC398DABE6}.Release|x86.Build.0 = Release|Win32
+		{283F3735-1818-4F46-807F-334AD32EC327}.Debug|x64.ActiveCfg = Debug|x64
+		{283F3735-1818-4F46-807F-334AD32EC327}.Debug|x64.Build.0 = Debug|x64
+		{283F3735-1818-4F46-807F-334AD32EC327}.Debug|x86.ActiveCfg = Debug|Win32
+		{283F3735-1818-4F46-807F-334AD32EC327}.Debug|x86.Build.0 = Debug|Win32
+		{283F3735-1818-4F46-807F-334AD32EC327}.Release|x64.ActiveCfg = Release|x64
+		{283F3735-1818-4F46-807F-334AD32EC327}.Release|x64.Build.0 = Release|x64
+		{283F3735-1818-4F46-807F-334AD32EC327}.Release|x86.ActiveCfg = Release|Win32
+		{283F3735-1818-4F46-807F-334AD32EC327}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F456ECFA-BC34-4FA9-B86A-3D6E9A6C99F7}
 	EndGlobalSection
 EndGlobal
