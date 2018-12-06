@@ -203,7 +203,7 @@ namespace ByteFountain
 
 		m_fuse = fuse_new(m_ch, &args, &nzb_oper, sizeof(nzb_fuse_operations), static_cast<void*>(GetRootDir().get()));
 
-		if (m_fuse == NULL)
+		if (m_fuse == nullptr)
 			throw std::runtime_error("fuse_new failed");
 
 		fuse_opt_free_args(&args);
@@ -237,13 +237,12 @@ namespace ByteFountain
 			}
 		}
 		);
-
 	}
 
 	void NZBFuseDrive::Start(const std::string& drivepath, const std::vector<UsenetServer>& servers)
 	{
-		m_drivepath=drivepath;
-	
+		m_drivepath = drivepath;
+
 		try
 		{
 			StartFuse();
@@ -252,7 +251,23 @@ namespace ByteFountain
 
 			for (const auto& server : servers) NZBDrive::AddServer(server);
 		}
-		catch(const std::runtime_error& e)
+		catch (const std::runtime_error& e)
+		{
+			StopFuse();
+			throw;
+		}
+	}
+
+	void NZBFuseDrive::SetDrivePath(const std::string& drivepath)
+	{
+		m_drivepath = drivepath;
+		StopFuse();
+
+		try
+		{
+			StartFuse();
+		}
+		catch (const std::runtime_error& e)
 		{
 			StopFuse();
 			throw;
@@ -269,28 +284,29 @@ namespace ByteFountain
 		}
 #endif
 
-		if (m_fuse) fuse_exit(m_fuse);
-
-		auto t0 = std::chrono::high_resolution_clock::now();
-		auto t1 = t0 + std::chrono::seconds(3);
-
+		if (m_fuse)
 		{
-			std::unique_lock<std::mutex> lk(m_fuseThreadRunningMutex);
-			while (m_fuseThreadRunning && std::chrono::high_resolution_clock::now() < t1)
-				m_fuseThreadRunningConditionVariable.wait_until(lk, t1);
+			fuse_exit(m_fuse);
+
+			auto t0 = std::chrono::high_resolution_clock::now();
+			auto t1 = t0 + std::chrono::seconds(3);
+
+			{
+				std::unique_lock<std::mutex> lk(m_fuseThreadRunningMutex);
+				while (m_fuseThreadRunning && std::chrono::high_resolution_clock::now() < t1)
+					m_fuseThreadRunningConditionVariable.wait_until(lk, t1);
+			}
+
+			if (m_fuseThreadRunning)
+			{
+				m_log << Logger::Error << "Waiting for FUSE to stop; please stop using and leave mounted directory" << Logger::End;
+			}
+
+			m_fuseThread.join();
+
+			fuse_unmount(m_drivepath.c_str(), m_ch);
+			fuse_destroy(m_fuse);
 		}
-
-		if (m_fuseThreadRunning)
-		{
-			m_log << Logger::Error << "Waiting for FUSE to stop; please stop using and leave mounted directory" << Logger::End;
-		}
-
-		m_fuseThread.join();
-
-
-		fuse_unmount(m_drivepath.c_str(), m_ch);
-		if (m_fuse) fuse_destroy(m_fuse);
-
 
 	}
 	void NZBFuseDrive::Stop()

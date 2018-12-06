@@ -38,6 +38,7 @@ class NZBFuseDrive : public NZBDrive
 public:
 	NZBFuseDrive(Logger& log);
 	void Start(const std::string& drivepath, const std::vector<UsenetServer>& servers);
+	void SetDrivePath(const std::string& drivepath);
 	virtual void Stop();
 
 };

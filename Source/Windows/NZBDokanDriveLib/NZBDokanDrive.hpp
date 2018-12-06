@@ -96,8 +96,6 @@ public:
 	int32_t AddServer(const UsenetServer& server);
 	void RemoveServer(const int32_t id);
 
-	void OnTrialTimeout();
-
 	int32_t Mount(const wchar_t* nzbpath, MountStatusFunction callback);
 	int32_t Unmount(const wchar_t* nzbpath);
 
@@ -120,8 +118,4 @@ public:
 	void SetConnectionStateChangedHandler(ConnectionStateChangedFunction handler);
 	void SetEventLogHandler(EventLogFunction handler);
 	void SetConnectionInfoHandler(ConnectionInfoFunction handler);
-
-	void SetCachePath(const std::filesystem::path& cache_path);
-	std::filesystem::path GetCachePath() const;
-
 };
