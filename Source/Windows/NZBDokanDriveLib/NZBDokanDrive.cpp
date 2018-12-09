@@ -1,12 +1,14 @@
-// NZBDokanDrive.cpp : Defines the entry point for the console application.
-//
+/*
+	Copyright (c) 2017, Ole Stauning
+	All rights reserved.
+
+	Use of this source code is governed by a GPLv3-style license that can be found
+	in the LICENSE file.
+*/
 
 #include "NZBDokanDrive.hpp"
 #include "IDirectory.hpp"
 #include "Logger.hpp"
-//#include "ntstatus.h"
-//#include "windows.h"
-#include "dokan.h"
 #include <aclapi.h>
 #include "fileinfo.h"
 #include "NZBFuseDrive.hpp"
@@ -123,7 +125,6 @@ class NZBDokanDrive_IMPL
 	std::mutex m_statusMutex;
 
 	std::thread m_thread;
-	int m_dokan_status;
 
 	//settings:
 	std::wstring m_drive_letter;
@@ -143,7 +144,6 @@ public:
 		m_NZBFuseDrive(new ByteFountain::NZBFuseDrive(m_logger)),
 		m_status(Stopped),
 		m_thread(),
-		m_dokan_status(DOKAN_ERROR),
 		m_drive_letter(L"N"),
 		m_pre_check_segments(false),
 		m_mount_point()
@@ -195,8 +195,6 @@ public:
 		m_NZBFuseDrive->Stop();
 		m_status = reason;
 
-		//		m_eventLogFunction = nullptr;
-
 		return NZBDokanDrive::Result::Success;
 	}
 
@@ -216,7 +214,6 @@ public:
 		}
 
 		m_status = Started;
-		m_dokan_status = DOKAN_SUCCESS;
 
 		return true;
 	}
@@ -227,8 +224,6 @@ public:
 		std::unique_lock<std::mutex> lk(m_statusMutex);
 		return _SetDriveLetter(val);
 	}
-
-
 
 	std::filesystem::path MountDir(std::filesystem::path path)
 	{

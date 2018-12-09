@@ -165,7 +165,6 @@ namespace NZBDrive
             if (!_shown)
             {
                 SuggestUsenetProvider();
-                CleanCacheDir();
                 ShowAddUsenetServer();
                 _shown = true;
             }
@@ -196,39 +195,6 @@ namespace NZBDrive
                 }
             }
         }
-
-        private void CleanCacheDir()
-        {
-            if (Directory.Exists(_model.Options.CachePath))
-            {
-                try
-                {
-                    var files = Directory.GetFiles(_model.Options.CachePath)
-                        .Where(name => Regex.IsMatch(name, @"\\[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                            RegexOptions.IgnoreCase));
-
-                    if (files.Count() > 0)
-                    {
-                        var dialog = new ClearCachePathWindow();
-                        dialog.Owner = this;
-                        var res = dialog.ShowDialog();
-
-                        if (res.HasValue && res.Value && dialog.MessageView.Result == WPFMessageViewResult.Yes)
-                        {
-                            foreach (string file in files) File.Delete(file);
-                        }
-                    }
-                }
-                catch (System.Exception)
-                {
-                    MessageBox.Show(Application.Current.MainWindow,
-                        string.Format("Could not access cache path {0}", _model.Options.CachePath)
-                        );
-                }
-            }
-        }
-        
-        public string LicenseKey { get { return _model.LicenseKey; } }
 
         public Version CurrentVersion
         {

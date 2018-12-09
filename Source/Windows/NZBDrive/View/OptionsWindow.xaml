@@ -32,23 +32,11 @@
                       Name="ComboBoxLogLevel" 
                       ItemsSource="{Binding Source={local:EnumList {x:Type model:LogLevel}, AsString=true}}" 
                       SelectedIndex="{Binding LogLevelIndex}" />
-
-            
-            <Label Name="CachePathLabel"  Grid.Row="1" Grid.Column="0" Margin="5" 
-                   Content="_Cache Path:"/>
             <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
-
-                <Border VerticalAlignment="Top" Grid.Column="0" Margin="5" BorderThickness="1"
-                    BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}" >
-                    <WindowsFormsHost Name="HostCachePath" Margin="5" />
-                </Border>
-                <Button Grid.Column="1" Margin="5" Padding="5" HorizontalContentAlignment="Left" 
-                    Name="ButtonCachePath" Content="..." Click="ChooseCacheFolder"/>
             </Grid>
 
             <Label Grid.Row="2" Grid.Column="0" Margin="5" 

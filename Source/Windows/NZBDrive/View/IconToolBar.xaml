@@ -20,7 +20,7 @@
                 <Button ToolTip="Add Usenet Server" Click="AddUsenetServer">
                     <Image Source="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Network.ico"/>
                 </Button>
-                <Button ToolTip="ByteFountain Search" Click="OpenByteFountain">
+                <Button ToolTip="NZBKing Search" Click="OpenByteFountain">
                     <Image Source="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Search-lense.ico"/>
                 </Button>
                 <Button Visibility="{Binding NewVersionAvailable, Converter={StaticResource showIfTrue}}" 

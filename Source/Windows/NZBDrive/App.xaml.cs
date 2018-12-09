@@ -53,12 +53,8 @@ namespace NZBDrive
                             {
                                 WebClient client = new WebClient();
                                 string url = "http://www.nzbdrive.com/version?v=" + curVersion.ToString();
-                                if (window.LicenseKey.Length > 0)
-                                {
-                                    url += "&k=" + GetMD5Hash(window.LicenseKey);
-                                }
-                                string newVersionTxt = client.DownloadString(url);
 
+                                string newVersionTxt = client.DownloadString(url);
                                 
                                 window.LatestVersion = new Version(newVersionTxt);
                                 window.LatestVersionCheckDate = DateTime.Now;

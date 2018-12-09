@@ -117,7 +117,7 @@ namespace NZBDrive.View
         
         private void OpenByteFountain(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://www.ByteFountain.com");
+            System.Diagnostics.Process.Start("http://www.nzbking.com");
         }
 
         private void GotoDownloadPage(object sender, RoutedEventArgs e)

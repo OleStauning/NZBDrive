@@ -253,6 +253,7 @@ namespace ByteFountain
 		}
 		catch (const std::runtime_error& e)
 		{
+			m_log << Logger::Fatal << "StartFuse threw an exception: " << e.what() << Logger::End;
 			StopFuse();
 			throw;
 		}
@@ -269,6 +270,7 @@ namespace ByteFountain
 		}
 		catch (const std::runtime_error& e)
 		{
+			m_log << Logger::Fatal << "StartFuse threw an exception: " << e.what() << Logger::End;
 			StopFuse();
 			throw;
 		}

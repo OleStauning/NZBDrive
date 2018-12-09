@@ -27,7 +27,6 @@ namespace NZBDrive.Model
     public class NZBDriveOptionsData
     {
         public LogLevel LogLevel { get; set; }
-        public string CachePath { get; set; }
         public char DriveLetter { get; set; }
 
         public NZBDriveOptionsData()
@@ -37,7 +36,6 @@ namespace NZBDrive.Model
         public NZBDriveOptionsData(NZBDriveOptionsData other)
         {
             LogLevel = other.LogLevel;
-            CachePath = other.CachePath;
             DriveLetter = other.DriveLetter;
         }
     }
@@ -58,7 +56,6 @@ namespace NZBDrive.Model
                 home = Directory.GetParent(home).ToString();
             }
 
-            CachePath = home+"\\NZBDriveCache";
             DriveLetter = 'N';
             LogLevel = Model.LogLevel.Warning;
         }
@@ -150,7 +147,6 @@ namespace NZBDrive.Model
         public void SetValues(NZBDriveOptionsData other)
         {
             LogLevel = other.LogLevel;
-            CachePath = other.CachePath;
             DriveLetter = other.DriveLetter;
         }
 
