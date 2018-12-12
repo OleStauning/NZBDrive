@@ -20,16 +20,6 @@ namespace NZBDrive.Model
         public NewsServerCollection NewsServerCollection { get; private set; }
         public NewsServerThrottling NewsServerThrottling { get; private set; }
         public NZBFileList MountedNZBFileList { get; private set; }
-        private string _licenseKey;
-        public string LicenseKey 
-        {
-            get { return _licenseKey; }
-            set 
-            { 
-                _licenseKey = value;
-                OnPropertyChanged("ValidLicenseKey"); 
-            }
-        }
         public NZBDriveOptions Options { get; private set; }
 
         public NZBDriveDLL.MountStatusFunction MountStatusHandle;
@@ -193,14 +183,5 @@ namespace NZBDrive.Model
                 _disposed = true;
             }
         }
-
-
-
-
-
-
-
-
-
     }
 }

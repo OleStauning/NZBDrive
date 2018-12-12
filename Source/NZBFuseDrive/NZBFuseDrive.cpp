@@ -262,8 +262,11 @@ namespace ByteFountain
 	void NZBFuseDrive::SetDrivePath(const std::string& drivepath)
 	{
 		m_drivepath = drivepath;
-		StopFuse();
-
+		
+		if (m_fuseThreadRunning)
+		{
+			StopFuse();
+		}
 		try
 		{
 			StartFuse();

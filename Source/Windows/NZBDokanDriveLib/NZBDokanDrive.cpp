@@ -189,7 +189,7 @@ public:
 
 		if (m_status == Stopped) return NZBDokanDrive::Success;
 
-		_SetDriveLetter(L"");
+//		_SetDriveLetter(L"");
 
 		m_status = StoppingDrive;
 		m_NZBFuseDrive->Stop();
@@ -203,17 +203,17 @@ public:
 	{
 		std::filesystem::path wmount_point = val + L":\\";
 
-		if (IsDrive(wmount_point)) return false;
+//		if (IsDrive(wmount_point)) return false;
 
 		m_NZBFuseDrive->SetDrivePath(wmount_point.string());
-
+		/*
 		if (!IsDrive(wmount_point))
 		{
 			m_status = Stopped;
 			return false;
 		}
-
-		m_status = Started;
+		*/
+//		m_status = Started;
 
 		return true;
 	}

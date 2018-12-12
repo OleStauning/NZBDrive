@@ -67,7 +67,6 @@ namespace NZBDrive.Model
         {
             NZBDriveSettingsData settings = new NZBDriveSettingsData()
             {
-                LicenseKey = model.LicenseKey,
                 UsenetServers = model.NewsServerCollection.Select(server => new NewsServerConnectionData(server.ServerConnection)).ToList(),
                 Throttling = new NewsServerThrottlingData(model.NewsServerThrottling),
                 LatestVersion = model.LatestVersion!=null ? model.LatestVersion.ToString() : "",
@@ -83,11 +82,6 @@ namespace NZBDrive.Model
         {
             NZBDriveSettingsData settings = new NZBDriveSettingsData();
             settings.Reload();
-
-            if (settings.LicenseKey != null)
-            {
-                model.LicenseKey = settings.LicenseKey;
-            }
 
             if (settings.Options != null)
             {
