@@ -13,10 +13,9 @@
 
     <Grid>
         <control:WPFMessageViewControl x:Name="MessageView" ButtonVisibility="OK" ImageSource="/NZBDrive;component/Resources/Icojam-Blueberry-Basic-Information.ico" >
-            <TextBlock TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10 10 10 10" >
-                NZBDrive <TextBlock Text="{Binding CurrentVersionString}"/>. Copyright © 2015 ByteFountain.
-            Find more information on <Hyperlink NavigateUri="http://www.nzbdrive.com" RequestNavigate="Hyperlink_RequestNavigate">www.nzbdrive.com</Hyperlink>
-            </TextBlock>
+            <TextBlock TextWrapping="Wrap" TextAlignment="Left" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10 10 10 10" ><Run Text="NZBDrive "/><InlineUIContainer>
+                    <TextBlock Text="{Binding CurrentVersionString}"/>
+                </InlineUIContainer><Run Text=". Copyright © 2015"/><Run Text="-2019"/><Run Text=" ByteFountain. Find more information on "/><Hyperlink NavigateUri="http://www.nzbdrive.com/"><Run Text="www.nzbdrive.com"/></Hyperlink></TextBlock>
         </control:WPFMessageViewControl>
     </Grid>
 </Window>
