@@ -64,10 +64,10 @@ Source: "{#MyRootDir}\x86\Release\dokan1.dll"; DestDir: "{app}"; Check: not Is64
 Source: "{#MyRootDir}\x64\Release\dokan1.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
 Source: "{#MyRootDir}\x86\Release\dokanfuse1.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
 Source: "{#MyRootDir}\x64\Release\dokanfuse1.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
-Source: "{#MyRootDir}\x86\Release\libcrypto-1_1.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
-Source: "{#MyRootDir}\x64\Release\libcrypto-1_1-x64.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
-Source: "{#MyRootDir}\x86\Release\libssl-1_1.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
-Source: "{#MyRootDir}\x64\Release\libssl-1_1-x64.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
+Source: "{#MyRootDir}\x86\Release\libcrypto-3.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
+Source: "{#MyRootDir}\x64\Release\libcrypto-3-x64.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
+Source: "{#MyRootDir}\x86\Release\libssl-3.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
+Source: "{#MyRootDir}\x64\Release\libssl-3-x64.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
 ; Xceed.Wpf.Toolkit.dll
 Source: "{#MyRootDir}\x86\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode 
 Source: "{#MyRootDir}\x64\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Check: Is64BitInstallMode 
@@ -79,8 +79,8 @@ Source: "DokanSetup.exe"; DestDir: "{app}";
 Source: "{#MyRootDir}\x86\Release\Microsoft.VisualStudio.Shell.Immutable.10.0.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode 
 Source: "{#MyRootDir}\x64\Release\Microsoft.VisualStudio.Shell.Immutable.10.0.dll"; DestDir: "{app}"; Check: Is64BitInstallMode 
 ; MS Redist
-Source: "C:\Program Files (x86)\Microsoft Visual Studio {#MyVSVer}\VC\redist\1033\vcredist_x64.exe"; DestDir: "{app}"; Check: Is64BitInstallMode
-Source: "C:\Program Files (x86)\Microsoft Visual Studio {#MyVSVer}\VC\redist\1033\vcredist_x86.exe"; DestDir: "{app}"; Check: not Is64BitInstallMode
+Source: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\vcredist_x64.exe"; DestDir: "{app}"; Check: Is64BitInstallMode
+Source: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\vcredist_x86.exe"; DestDir: "{app}"; Check: not Is64BitInstallMode
 
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

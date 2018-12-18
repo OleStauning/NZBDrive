@@ -10,7 +10,6 @@
 #include "IDirectory.hpp"
 #include "Logger.hpp"
 #include <aclapi.h>
-#include "fileinfo.h"
 #include "NZBFuseDrive.hpp"
 #include "text_tool.hpp"
 #include <memory>
