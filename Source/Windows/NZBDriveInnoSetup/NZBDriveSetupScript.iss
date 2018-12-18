@@ -69,15 +69,13 @@ Source: "{#MyRootDir}\x64\Release\libcrypto-3-x64.dll"; DestDir: "{app}"; Check:
 Source: "{#MyRootDir}\x86\Release\libssl-3.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode
 Source: "{#MyRootDir}\x64\Release\libssl-3-x64.dll"; DestDir: "{app}"; Check: Is64BitInstallMode
 ; Xceed.Wpf.Toolkit.dll
-Source: "{#MyRootDir}\x86\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode 
-Source: "{#MyRootDir}\x64\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; Check: Is64BitInstallMode 
+Source: "{#MyRootDir}\x86\Release\Xceed.Wpf.Toolkit.dll"; DestDir: "{app}"; 
 ; .NET 4.5
 Source: "dotNetFx45_Full_setup.exe"; DestDir: "{app}"; 
 ; Dokan
 Source: "DokanSetup.exe"; DestDir: "{app}"; 
 ; Microsoft.VisualStudio.Shell.Immutable.10.0.dll
-Source: "{#MyRootDir}\x86\Release\Microsoft.VisualStudio.Shell.Immutable.10.0.dll"; DestDir: "{app}"; Check: not Is64BitInstallMode 
-Source: "{#MyRootDir}\x64\Release\Microsoft.VisualStudio.Shell.Immutable.10.0.dll"; DestDir: "{app}"; Check: Is64BitInstallMode 
+Source: "{#MyRootDir}\x86\Release\Microsoft.VisualStudio.Shell.Immutable.10.0.dll"; DestDir: "{app}";
 ; MS Redist
 Source: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\vcredist_x64.exe"; DestDir: "{app}"; Check: Is64BitInstallMode
 Source: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\vcredist_x86.exe"; DestDir: "{app}"; Check: not Is64BitInstallMode
