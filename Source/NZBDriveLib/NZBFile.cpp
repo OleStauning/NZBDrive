@@ -267,7 +267,7 @@ void NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo)
 
 	if (m_state == NZBFile::MyDecoder::Canceled) return;
 
-	auto size = (std::size_t)(beginInfo.size);		
+	auto size = (std::size_t)(beginInfo.size);
 	m_cached_segment = m_file->m_segment_cache.Create(m_file->m_fileID, m_idx, size);
 }
 
@@ -275,8 +275,18 @@ void NZBFile::MyDecoder::OnData(const unsigned char* buf, const std::size_t size
 {
 	if (m_cached_segment) 
 	{
-		m_cached_segment->Write(buf,m_offset,size);
-		m_offset += size;
+		auto newsize = size;
+		if (m_offset + size > m_cached_segment->Size)
+		{
+			newsize = std::min(size, m_cached_segment->Size > m_offset ? m_cached_segment->Size-m_offset : (std::size_t)0);
+			m_file->m_log<<Logger::Error<<"Extra data found when decoding: \"" << m_file->m_beginInfo->name << "\"" << 
+			" ignoring " << size - newsize << " bytes" << Logger::End;
+		}
+		
+		if (newsize>0)
+			m_cached_segment->Write(buf,m_offset,newsize);
+		
+		m_offset += newsize;
 	}
 }
 
@@ -506,7 +516,7 @@ std::tuple<std::size_t, std::size_t> NZBFile::FindSegmentIdxRange(const unsigned
 	return {lb, ub};
 }
 
-std::size_t NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf, 
+std::tuple<bool, std::size_t> NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf, 
 	const unsigned long long offset, const std::size_t size, bool& err_occurred, CancelSignal* cancel, const bool priority)
 {
 	unsigned long long begin=offset;
@@ -587,12 +597,9 @@ std::size_t NZBFile::TryGetData(std::unordered_set<std::size_t>& done, char* buf
 	
 //	m_log<<Logger::Info<<"TryGetData: \""<< m_beginInfo->name <<
 //		"\", segments [" << lb << ", " << ub << "], out of [0, "<<m_segments.size()<<"], found "<<
-//		done.size()<<" segments; ready="<<(ready?"yes":"no")<<Logger::End;
-			
+//		done.size()<<" segments; ready="<<(ready?"yes":"no")<<" readsize="<<readsize<<Logger::End;
 
-	if (!ready) return 0;
-	
-	return readsize;
+	return std::make_tuple(ready, readsize);
 }
 
 bool NZBFile::GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize)
@@ -616,11 +623,15 @@ bool NZBFile::GetFileData(char* buf, const unsigned long long offset, const std:
 	
 	std::unordered_set<std::size_t> done;
 	
-	while (0==(readsize=TryGetData(done,buf,offset,size,err)) && !err) 
+	std::tuple<bool, std::size_t> trygetres;
+	
+	while (!std::get<0>(trygetres=TryGetData(done,buf,offset,size,err)) && !err) 
 	{
 		m_cond.wait(lock);
 	}
-		
+	
+	readsize=std::get<1>(trygetres);
+	
 	m_log<<Logger::Debug<<"Stop Reading: "<<m_beginInfo->name<<", "<<offset<<"-"<<offset+size
 		<<(err?" (failed)": "(succeeded)")<<Logger::End;
 
@@ -639,10 +650,16 @@ void NZBFile::AsyncGetFileData(OnDataFunction function, char* buf, const unsigne
 		
 		std::unordered_set<std::size_t> done;
 		
+		std::tuple<bool, std::size_t> trygetres;
+		
 		if (size==0) ready=true;
 		else if (m_beginInfo && offset>=m_beginInfo->size) ready=true;
-		else if (0 != (readsize = TryGetData(done, buf, offset, size, err, cancel, priority)) || err) ready = true;
-	
+		else if (std::get<0>(trygetres = TryGetData(done, buf, offset, size, err, cancel, priority)) || err)
+		{
+			readsize = std::get<1>(trygetres);
+			ready = true;
+		}
+		
 		if (!ready) 
 		{
 			uint_fast64_t id=++m_id_counter;
@@ -683,10 +700,11 @@ void NZBFile::ProcessAsyncDataRequests()
 
 			bool err=false;
 
-			std::size_t readsize = TryGetData(req.done, req.buf, req.offset, req.size, err, nullptr, req.priority);
+			auto trygetres = TryGetData(req.done, req.buf, req.offset, req.size, err, nullptr, req.priority);
 			
-			if (readsize>0 || err)
+			if (std::get<0>(trygetres) || err)
 			{
+				const auto readsize = std::get<1>(trygetres);
 				ready_list.emplace_back( std::make_tuple(req.func, readsize) );
 				i=m_data_requests.erase(i);
 			}

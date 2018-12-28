@@ -104,7 +104,7 @@ private:
 	
 	std::tuple<std::size_t, std::size_t> FindSegmentIdxRange(const unsigned long long begin, const unsigned long long end);
 	
-	std::size_t TryGetData(std::unordered_set<std::size_t>& done, 
+	std::tuple<bool, std::size_t> TryGetData(std::unordered_set<std::size_t>& done, 
 		char* buf, const unsigned long long offset, const std::size_t size, bool& err,
 		CancelSignal* cancel=0, const bool priority=false);
 
@@ -169,7 +169,7 @@ public:
 		yDecoder m_decoder;
 		const std::size_t m_idx;
 		std::shared_ptr<CachedSegment> m_cached_segment;
-		unsigned long long m_offset;
+		std::size_t m_offset;
 
 		MyDecoder(std::shared_ptr<NZBFile> file, const std::size_t idx);
 		virtual ~MyDecoder();
