@@ -16,6 +16,11 @@
 #include <deque>
 #include "Logger.hpp"
 
+#include <memory>
+#include <stack>
+#include <stdexcept>
+
+
 namespace ByteFountain
 {
 	
@@ -29,7 +34,7 @@ public:
 	CachedSegment(size_t newSize);
 	~CachedSegment();
 	void ReAllocate(size_t newSize);
-	void Read(void *buf, const unsigned long long offset, const std::size_t size);
+	std::size_t Read(void *buf, const unsigned long long offset, const std::size_t size);
 	void Write(const void *buf, const unsigned long long offset, const std::size_t size);
 };
 

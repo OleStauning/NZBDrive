@@ -79,7 +79,7 @@ namespace ByteFountain
 
 		std::shared_ptr<MyClient> GetSharedPtr()
 		{
-			return shared_from_this();
+			return std::enable_shared_from_this < MyClient >::shared_from_this();
 		}
 
 		bool HasCapacity() const; // declared later

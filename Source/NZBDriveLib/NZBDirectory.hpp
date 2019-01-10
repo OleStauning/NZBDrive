@@ -42,7 +42,7 @@ namespace ByteFountain
 		std::map< std::filesystem::path, Element > content;
 		
 		void RegisterFile(const std::shared_ptr<IFile>& file, std::filesystem::path::iterator i, const std::filesystem::path& p);
-		void Unmount(std::filesystem::path::iterator i, const std::filesystem::path& p);
+		bool Unmount(std::filesystem::path::iterator i, const std::filesystem::path& p);
 		bool Exists(std::filesystem::path::iterator i, const std::filesystem::path& p);
 		std::shared_ptr<NZBDirectory> GetDirectory(std::filesystem::path::iterator i, const std::filesystem::path& p);
 		std::shared_ptr<IFile> GetFile(std::filesystem::path::iterator i, const std::filesystem::path& p);

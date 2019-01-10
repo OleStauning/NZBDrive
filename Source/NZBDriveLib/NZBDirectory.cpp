@@ -26,35 +26,34 @@ namespace ByteFountain
 			e.dir->RegisterFile(file,i,p);
 		}
 	}
-	void NZBDirectory::Unmount(std::filesystem::path::iterator i, const std::filesystem::path& p)
+	bool NZBDirectory::Unmount(std::filesystem::path::iterator i, const std::filesystem::path& p)
 	{
 		if (i==p.end())
 		{ 
-			if (i->string()=="/") Unmount(++i,p);
-			else
-				for (const auto& element : content)
-				{
-					const Element& e(element.second);
-					if (e.file) e.file->Unmount();
-					if (e.dir) e.dir->Unmount(i,p);
-				}
+			for (const auto& element : content)
+			{
+				const Element& e(element.second);
+				if (e.file) e.file->Unmount();
+				if (e.dir) e.dir->Unmount(i,p);
+			}
+			return true;
 		}
 		else
 		{
 			const auto ci = content.find(*i);
-			if (ci == content.end()) return; // not found...
+			if (ci == content.end()) return false; // not found...
 
 			const Element& e(ci->second);
-			i++;
-			if (i==p.end())
+			
+			if (e.file) return false; // Unmounting file?!
+			
+			if (e.dir)
 			{
-				Unmount(i,p);
-				content.erase(ci);
+				if (e.dir->Unmount(i,p)) content.erase(ci);
+				return content.empty();
 			}
-			else
-			{
-				if (e.dir) e.dir->Unmount(i,p);
-			}
+			
+			return false;
 		}
 	}
 	void NZBDirectory::Clear()

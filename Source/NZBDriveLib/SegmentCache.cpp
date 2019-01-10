@@ -37,15 +37,15 @@ void CachedSegment::ReAllocate(size_t newSize)
 	}
 	Size=newSize;
 }
-void CachedSegment::Read(void *buf, const unsigned long long offset, const std::size_t size)
+std::size_t CachedSegment::Read(void *buf, const unsigned long long offset, const std::size_t size)
 {
+	auto readsize = size;
 	if (offset+size>Size)
 	{
-		std::ostringstream oss;
-		oss<<"CachedSegment::Read: Attempt to read "<<size<<" bytes from offset "<<offset<<" in buffer with length "<<Size;
-		throw std::out_of_range(oss.str());
+		readsize = offset<Size ? Size - offset : 0;
 	}
-	std::memcpy(buf,(char*)Data+offset,size);
+	std::memcpy(buf,(char*)Data+offset,readsize);
+	return readsize;
 }
 void CachedSegment::Write(const void *buf, const unsigned long long offset, const std::size_t size)
 {
@@ -93,15 +93,18 @@ std::shared_ptr<CachedSegment> SegmentCache::Create(int32_t fileId, int segmentI
 		for(auto itkey = m_fifo_keys.begin(); itkey != m_fifo_keys.end(); ++itkey)
 		{
 			const auto itseg = m_segments.find(*itkey);
-			const auto& segptr = itseg->second;
-//			m_logger << Logger::Info << "   Looking for unused segment key=("<<itkey->FileId<<", "<<itkey->SegmentIdx<<") Usage "<< segptr.use_count() << Logger::End;
-			if (segptr.use_count() == 1)
+			if (itseg != m_segments.end())
 			{
-				segment = segptr;
-				segment->ReAllocate(size);
-				m_fifo_keys.erase(itkey);
-				m_segments.erase(itseg);
-				break;
+				const auto& segptr = itseg->second;
+	//			m_logger << Logger::Info << "   Looking for unused segment key=("<<itkey->FileId<<", "<<itkey->SegmentIdx<<") Usage "<< segptr.use_count() << Logger::End;
+				if (segptr.use_count() == 1)
+				{
+					segment = segptr;
+					segment->ReAllocate(size);
+					m_fifo_keys.erase(itkey);
+					m_segments.erase(itseg);
+					break;
+				}
 			}
 		}
 	}

@@ -159,6 +159,12 @@ void NZBFile::SetFileInfo(const yBeginInfo& beginInfo)
 		std::unique_lock<std::mutex> lock(m_mutex);
 
 		SetBeginInfo(beginInfo);
+		
+		yPartInfo partInfo;
+		partInfo.begin = 1;
+		partInfo.end = beginInfo.size+1;
+		
+		m_segments[0].ypart = partInfo;
 
 		m_cond.notify_all();
 	}
@@ -547,7 +553,7 @@ std::tuple<bool, std::size_t> NZBFile::TryGetData(std::unordered_set<std::size_t
 		{
 			auto seg_begin = info.ypart->begin-1;
 			auto seg_end = info.ypart->end;
-
+			
 			if (offset>=seg_end || offset+size<seg_begin) continue;
 			
 			auto offset1 = seg_begin > offset ? seg_begin - offset : 0;
@@ -574,10 +580,8 @@ std::tuple<bool, std::size_t> NZBFile::TryGetData(std::unordered_set<std::size_t
 				continue;
 			}
 			
-			cached_segment->Read(buf2, offset2, size2);
-			
-			readsize+=size2;
-			
+			readsize += cached_segment->Read(buf2, offset2, size2);
+						
 			done.insert(idx);
 
 			break;
