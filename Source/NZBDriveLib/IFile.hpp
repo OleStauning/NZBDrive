@@ -15,6 +15,7 @@
 #include <memory>
 #include <boost/signals2.hpp>
 #include <filesystem>
+#include "make_copyable.hpp"
 
 namespace ByteFountain
 {
@@ -32,10 +33,22 @@ namespace ByteFountain
 		virtual bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize) = 0;
 
 		typedef std::function< void(const std::size_t readsize) > OnDataFunction;
-		virtual void AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size,
-			CancelSignal* cancel=0, const bool priority=false)=0;
+		
+		template <class FuncT>
+		void AsyncGetFileData(FuncT&& func, char* buf, const unsigned long long offset, const std::size_t size,
+			CancelSignal* cancel=0, const bool priority=false)
+		{
+			if constexpr (std::is_copy_constructible<FuncT>::value) 
+				_AsyncGetFileData(std::move(func), buf, offset, size, cancel, priority);
+			else 
+				_AsyncGetFileData(make_copyable(std::move(func)), buf, offset, size, cancel, priority);
+		}
 
 		virtual void Unmount() = 0;
+		
+	private:
+		virtual void _AsyncGetFileData(const OnDataFunction& func, char* buf, const unsigned long long offset, const std::size_t size,
+			CancelSignal* cancel=0, const bool priority=false)=0;
 	};
 }
 

@@ -47,7 +47,7 @@ namespace ByteFountain
 		return res;
 	}
 
-	void ReadAheadFile::AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size,
+	void ReadAheadFile::_AsyncGetFileData(const OnDataFunction& func, char* buf, const unsigned long long offset, const std::size_t size,
 		CancelSignal* cancel = 0, const bool priority=false)
 	{
 		m_file->AsyncGetFileData(func, buf, offset, size, nullptr, priority);

@@ -69,7 +69,7 @@ namespace
 		int part=0;
 		if (!GetZIPFilenameAndPart(file,name,part)) return false;
 		
-		std::shared_ptr<zip_data> data(new zip_data());
+		auto data = std::make_shared<zip_data>();
 		data->err=false;
 		data->path=path/std::filesystem::path(name).stem();
 		data->part=part;

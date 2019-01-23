@@ -98,13 +98,13 @@ namespace ByteFountain
 	{
 		m_pImpl->Stop();
 	}
-	int32_t NZBDrive::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	int32_t NZBDrive::_Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
+		const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions)
 	{
 		return m_pImpl->Mount(mountdir, nzbfile, mountStatusFunction, mountOptions);
 	}
-	int32_t NZBDrive::Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
-		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	int32_t NZBDrive::_Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
+		const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions)
 	{
 		return m_pImpl->Mount(mountdir, "", nzb, mountStatusFunction, mountOptions);
 	}

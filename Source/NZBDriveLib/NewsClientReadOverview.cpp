@@ -138,9 +138,22 @@ void NewsClientReadOverview::HandleRequestGROUPResponse(NewsClient& client, cons
 		std::vector<std::string> strs;
 		boost::split(strs,status_message,boost::is_any_of(" \t"));
 
-		const unsigned long long size = std::stoull(strs[0]);
-		const unsigned long long low = std::stoull(strs[1]);
-		const unsigned long long high = std::stoull(strs[2]);
+		unsigned long long size;
+		unsigned long long low;
+		unsigned long long high;
+		
+		try
+		{
+			size = std::stoull(strs[0]);
+			low = std::stoull(strs[1]);
+			high = std::stoull(strs[2]);
+		}
+		catch(const std::exception& e)
+		{
+			m_logger << Logger::Error <<"Could not read (size,low,high) from: "<< 
+				strs[0] << " " << strs[1] << " " << strs[2] << Logger::End;
+			throw e;
+		}
 		
 		m_logger << Logger::Debug<<"size "<<size<<Logger::End;
 		m_logger << Logger::Debug<<"low "<<low<<Logger::End;
@@ -258,7 +271,17 @@ void NewsClientReadOverview::HandleReadXOVERStream(NewsClient& client, const err
 				std::vector<std::string> strs;
 				boost::split(strs,value,boost::is_any_of("\t"));
 				
-				m_currentID = std::stoull(strs[0]);
+				try
+				{
+				
+					m_currentID = std::stoull(strs[0]);
+				}
+				catch(const std::exception& e)
+				{
+					m_logger << Logger::Error <<"Could not read article ID from: "<< 
+						strs[0] << Logger::End;
+					throw e;
+				}
 				
 				m_handler->OnOverviewResponse(
 					OverviewResponse(

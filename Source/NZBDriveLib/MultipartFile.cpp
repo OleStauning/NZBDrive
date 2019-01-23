@@ -64,14 +64,14 @@ namespace ByteFountain
 		}
 		return err;
 	}
-	void MultipartFile::AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size_in,
+	void MultipartFile::_AsyncGetFileData(const OnDataFunction& func, char* buf, const unsigned long long offset, const std::size_t size_in,
 		CancelSignal* cancel, const bool priority)
 	{
-		std::size_t size = std::min(size_in, (std::size_t)(m_filesize-offset));
+		auto size = std::min(size_in, (std::size_t)(m_filesize-offset));
 		std::size_t r;
 		unsigned long long o=offset;
 		std::size_t s=size;
-		std::shared_ptr< std::atomic<std::size_t> > readsize = std::shared_ptr< std::atomic<std::size_t> >(new std::atomic<std::size_t>(0));
+		auto readsize = std::make_shared< std::atomic<std::size_t> >(0);
 		
 		for(PartsMap::const_iterator i=m_parts_map.upper_bound(offset); s>0 && i!=m_parts_map.end(); ++i)
 		{

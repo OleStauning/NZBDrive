@@ -52,7 +52,7 @@ public:
 	std::filesystem::path GetFileName();
 	unsigned long long GetFileSize();
 	bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize);
-	void AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size, CancelSignal* cancel = 0, const bool priority = false);
+	void _AsyncGetFileData(const OnDataFunction& func, char* buf, const unsigned long long offset, const std::size_t size, CancelSignal* cancel = 0, const bool priority = false);
 	bool SetFilePart(const int part, std::shared_ptr<InternalFile> file, const unsigned long long offset, const unsigned long long size, const bool bof, const bool eof);
 	void Finalize();
 

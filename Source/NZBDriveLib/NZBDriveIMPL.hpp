@@ -119,7 +119,7 @@ namespace ByteFountain
 		RateLimiter::Parameters GetRateLimiterConfiguration();
 
 		int32_t Mount(const int32_t mountID, const std::filesystem::path& mountdir, const nzb& nzb, 
-			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
+			const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions);
 		NZBDriveIMPL::MountStates::iterator Unmount(const std::filesystem::path& mountdir,
 			const NZBDriveIMPL::MountStates::iterator& it_state);
 
@@ -158,9 +158,9 @@ namespace ByteFountain
 		void Stop();
 
 		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-			MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
+			const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions);
 		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-			const nzb& nzb, MountStatusFunction mountStatusFunction, const MountOptions mountOptions);
+			const nzb& nzb, const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions);
 		int32_t Unmount(const std::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();

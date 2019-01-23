@@ -161,8 +161,9 @@ namespace ByteFountain
 			else
 			{
 				// Wrap file in read-ahead file:
-				std::shared_ptr<IFile> rafile(new ReadAheadFile(m_io_service,m_logger,file,m_drive));
-				m_root_dir->RegisterFile(rafile,filepath);
+//				auto rafile = std::make_shared<ReadAheadFile>(m_io_service,m_logger,file,m_drive);
+//				m_root_dir->RegisterFile(rafile,filepath);
+				m_root_dir->RegisterFile(file,filepath);
 			}
 		}	
 	}
@@ -173,10 +174,8 @@ namespace ByteFountain
 		{
 			int32_t fileID = m_drive.m_fileCount++;
 
-			std::shared_ptr<NZBFile> file(
-				new NZBFile(m_io_service, m_nzbID, fileID, nzbfile, m_clients, m_segment_cache, m_logger,
-				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction)
-				);
+			auto file = std::make_shared<NZBFile>(m_io_service, m_nzbID, fileID, nzbfile, m_clients, m_segment_cache, m_logger,
+				m_fileAddedFunction, m_fileInfoFunction, m_fileSegmentStateChangedFunction, m_fileRemovedFunction);
 
 //			m_log << Logger::Info << "AsyncGetFilename Called: " << file << Logger::End;
 			

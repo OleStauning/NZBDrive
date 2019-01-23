@@ -17,6 +17,7 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include "make_copyable.hpp"
 
 namespace ByteFountain
 {
@@ -139,7 +140,14 @@ namespace ByteFountain
 		virtual bool Start() = 0;
 		virtual void Stop() = 0;
 
-		virtual int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default) = 0;
+		template <class FuncT>
+		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, FuncT&& func, const MountOptions mountOptions = MountOptions::Default)
+		{
+			if constexpr (std::is_copy_constructible<FuncT>::value) 
+				return _Mount(mountdir, nzbfile, std::move(func), mountOptions);
+			else 
+				return _Mount(mountdir, nzbfile, make_copyable(std::move(func)), mountOptions);
+		}
 		virtual int32_t Unmount(const std::filesystem::path& mountdir) = 0;
 
 		virtual std::shared_ptr<IDirectory> GetRootDir() = 0;
@@ -150,7 +158,9 @@ namespace ByteFountain
 
 		virtual uint_fast64_t RXBytes() = 0;
 		virtual uint_fast64_t GetTotalNumberOfBytes() const = 0;
-
+	
+	private:
+		virtual int32_t _Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions = MountOptions::Default) = 0;
 	};
 
 }

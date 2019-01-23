@@ -18,6 +18,7 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include "make_copyable.hpp"
 
 namespace ByteFountain
 {
@@ -52,10 +53,25 @@ namespace ByteFountain
 		bool Start();
 		void Stop();
 
-		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
-		int32_t Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
-			MountStatusFunction mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
+
+		template <class FuncT>
+		int32_t Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, FuncT&& func, const MountOptions mountOptions = MountOptions::Default)
+		{
+			if constexpr (std::is_copy_constructible<FuncT>::value) 
+				return _Mount(mountdir, nzbfile, std::move(func), mountOptions);
+			else 
+				return _Mount(mountdir, nzbfile, make_copyable(std::move(func)), mountOptions);
+		}
+
+		template <class FuncT>
+		int32_t Mount(const std::filesystem::path& mountdir, const nzb& nzb, FuncT&& func, const MountOptions mountOptions = MountOptions::Default)
+		{
+			if constexpr (std::is_copy_constructible<FuncT>::value) 
+				return _Mount(mountdir, nzb, std::move(func), mountOptions);
+			else 
+				return _Mount(mountdir, nzb, make_copyable(std::move(func)), mountOptions);
+		}
+
 		int32_t Unmount(const std::filesystem::path& mountdir);
 
 		std::shared_ptr<IDirectory> GetRootDir();
@@ -68,6 +84,13 @@ namespace ByteFountain
 		uint_fast64_t GetTotalNumberOfBytes() const;
 
 	private:
+		
+		int32_t _Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
+			const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
+		int32_t _Mount(const std::filesystem::path& mountdir, const nzb& nzb, 
+			const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions = MountOptions::Default);
+		
+		
 		NZBDrive& operator =(const NZBDrive&) = delete;
 		NZBDrive(const NZBDrive&) = delete;
 		std::unique_ptr<class NZBDriveIMPL> m_pImpl;

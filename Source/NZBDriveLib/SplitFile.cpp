@@ -87,7 +87,7 @@ using namespace boost::xpressive;
 	{
 		for(auto& parts : m_split_file_parts)
 		{
-			std::shared_ptr<SplitFile> splitFile(new SplitFile(m_log,parts.second.name));
+			auto splitFile = std::make_shared<SplitFile>(m_log,parts.second.name);
 			size_t count=0;
 			int lastpart;
 			bool complete=true;

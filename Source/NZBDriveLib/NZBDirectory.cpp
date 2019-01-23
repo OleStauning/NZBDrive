@@ -152,7 +152,7 @@ namespace ByteFountain
 		}
 		return res;
 	}
-	void NZBDirectory::EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
+	void NZBDirectory::_EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
 		const std::filesystem::path& p)
 	{
 		std::unique_lock<std::mutex> lock(m_root_mutex);

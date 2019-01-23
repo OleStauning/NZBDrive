@@ -411,7 +411,7 @@ namespace ByteFountain
 		ResetHandlers();
 	}
 	
-	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const std::filesystem::path& mountdir, const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+	int32_t NZBDriveIMPL::Mount(const int32_t nzbID, const std::filesystem::path& mountdir, const nzb& mountfile, const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions)
 	{
 		bool exctract_archives = (mountOptions & MountOptions::DontExtractArchives) == MountOptions::Default;
 		
@@ -444,7 +444,7 @@ namespace ByteFountain
 	}
 
 	int32_t NZBDriveIMPL::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-		MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+		const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions)
 	{
 		try
 		{
@@ -459,7 +459,7 @@ namespace ByteFountain
     }
 	
 	int32_t NZBDriveIMPL::Mount(const std::filesystem::path& mountdir, const std::string& nzbfile, 
-		const nzb& mountfile, MountStatusFunction mountStatusFunction, const MountOptions mountOptions)
+		const nzb& mountfile, const MountStatusFunction& mountStatusFunction, const MountOptions mountOptions)
 	{
 		if (m_state != Started) return MountErrorCode::MountingFailed;
 

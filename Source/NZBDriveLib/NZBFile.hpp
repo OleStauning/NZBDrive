@@ -211,7 +211,7 @@ public:
 	bool GetFileData(char* buf, const unsigned long long offset, const std::size_t size, std::size_t& readsize);
 
 	void CancelAsyncGetFileData(const uint_fast64_t& id);
-	void AsyncGetFileData(OnDataFunction func, char* buf, const unsigned long long offset, const std::size_t size,
+	void _AsyncGetFileData(const OnDataFunction& func, char* buf, const unsigned long long offset, const std::size_t size,
 		CancelSignal* cancel = 0, const bool priority = false);
 
 	void CancelAsyncGetFilename(const uint_fast64_t& id);

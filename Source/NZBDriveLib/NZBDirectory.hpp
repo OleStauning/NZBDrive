@@ -60,7 +60,7 @@ namespace ByteFountain
 		bool Exists(const std::filesystem::path& p);
 		void Unmount(const std::filesystem::path& p);
 		void Clear();
-		void EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
+		void _EnumFiles(std::function<void (const std::filesystem::path& path, std::shared_ptr<IFile> file)> callback,
 			const std::filesystem::path& p= std::filesystem::path());
 		uint_fast64_t GetTotalNumberOfBytes() const { return m_totalNumberOfBytes; }
 	};
