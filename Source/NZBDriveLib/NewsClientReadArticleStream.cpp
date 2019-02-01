@@ -82,26 +82,29 @@ NewsClientReadArticleStream::NewsClientReadArticleStream(io_service& ios, Logger
 
 void NewsClientReadArticleStream::GetArticleStream(NewsClient& client)
 {
+	auto group = m_groups.back();
+	auto msgid = "<"+m_msgIDs.back()+">";
+	
 	std::ostream request_stream(&m_request);
-	request_stream << "GROUP "<<m_groups.back()<<"\r\n";
-	request_stream << "BODY <"<<m_msgIDs.back()<<">\r\n";
+	request_stream << "GROUP "<<group<<"\r\n";
+	request_stream << "BODY "<<msgid<<"\r\n";
 
 	client.AsyncWriteRequest(*this,
-		[&client, this](const error_code& err, const std::size_t len) mutable
+		[&client, this, msgid](const error_code& err, const std::size_t len) mutable
 		{
-			HandleBodyRequestGROUP(client, err, len);
+			HandleBodyRequestGROUP(client, err, len, msgid);
 		}
 	);
 }
 
-void NewsClientReadArticleStream::HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len)
+void NewsClientReadArticleStream::HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
 {
 	if (!err)
 	{
 		client.AsyncReadResponse(*this,
-			[&client, this](const error_code& err, const std::size_t len) mutable
+			[&client, this, msgid](const error_code& err, const std::size_t len) mutable
 			{
-				HandleBodyRequestGROUPResponse(client, err, len);
+				HandleBodyRequestGROUPResponse(client, err, len, msgid);
 			}
 		);
 	}
@@ -111,7 +114,7 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUP(NewsClient& client, con
 	}
 }
 
-void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& client, const error_code& err, const std::size_t len)
+void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
 {
 	if (!err)
 	{
@@ -128,10 +131,10 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& cli
 		}
 
 		client.AsyncReadResponse(*this,
-			[&client, this, status_message_GROUP, status_code_GROUP]
+			[&client, this, status_message_GROUP, status_code_GROUP, msgid]
 		(const error_code& err, const std::size_t len) mutable
 			{
-				HandleBodyRequestBODYResponse(client, status_message_GROUP, status_code_GROUP, err, len);
+				HandleBodyRequestBODYResponse(client, status_message_GROUP, status_code_GROUP, err, len, msgid);
 			}
 		);
 		
@@ -145,7 +148,7 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& cli
 
 void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& client, 
 	const std::string& status_message_GROUP, const unsigned int status_code_GROUP, 
-	const error_code& err, const std::size_t len)
+	const error_code& err, const std::size_t len, const std::string& msgid)
 {
 	if (!err)
 	{
@@ -222,7 +225,15 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 				<< status_code_BODY << " " << status_message_BODY << Logger::End;
 			return ClientReconnectRetry(client);
 		}
-				
+		
+		if (!boost::algorithm::ends_with(status_message_BODY, msgid))
+		{
+			m_logger<< Logger::Error << "RESPONSE MSG: " << status_message_BODY 
+				<< "REQUESTED: " << msgid << Logger::End;
+			
+			return ClientReconnectRetry(client);
+		}
+
 		client.AsyncReadDataResponse(*this,
 			[&client, this](const error_code& err, const std::size_t len) mutable
 			{

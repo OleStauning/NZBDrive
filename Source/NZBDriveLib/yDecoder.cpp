@@ -87,7 +87,7 @@ namespace ByteFountain
 					const std::string line(msg,len);
 					const char* p;
 					p=findAttribute(line,"size=");
-					if (0==p) 
+					if (p==0) 
 					{
 						m_callbacks.OnError("No size in =begin",FAILED);
 						m_decodingState=ErrorState;
@@ -96,11 +96,11 @@ namespace ByteFountain
 					m_beginInfo.size = strtoull(p,0,10);
 					p=findAttribute(line,"part=");
 					m_beginInfo.multipart = (p!=0);
-					m_beginInfo.part = m_beginInfo.multipart ? strtoul(p,0,10) : 0;
+					m_beginInfo.part = m_beginInfo.multipart ? strtoul(p,nullptr,10) : 0;
 					p=findAttribute(line,"line=");
-					m_beginInfo.line = strtoul(p,0,10);
+					if (p!=0) m_beginInfo.line = strtoul(p,nullptr,10);
 					p=findAttribute(line,"name=");
-					if (0==p) 
+					if (p==0) 
 					{
 						m_callbacks.OnError("No name in =begin",FAILED);
 						m_decodingState=ErrorState;
@@ -124,27 +124,27 @@ namespace ByteFountain
 					const std::string line(msg,len);
 					const char* p;
 					p=findAttribute(line,"begin=");
-					if (0==p) 
+					if (p==0) 
 					{
 						m_callbacks.OnError("No begin in =part",FAILED);
 						m_decodingState=ErrorState;
 						return;
 					}
-					m_partInfo.begin = strtoull(p,0,10);
+					m_partInfo.begin = strtoull(p,nullptr,10);
 					if (m_partInfo.begin<1 || m_partInfo.begin>m_beginInfo.size)
 					{
 						m_callbacks.OnError("begin is not valid in =part",FAILED);
 						m_decodingState=ErrorState;
-						return;	
+						return;
 					}
 					p=findAttribute(line,"end=");
-					if (0==p) 
+					if (p==0) 
 					{
 						m_callbacks.OnError("No end in =part",FAILED);
 						m_decodingState=ErrorState;
 						return;
 					}
-					m_partInfo.end = strtoull(p,0,10);
+					m_partInfo.end = strtoull(p,nullptr,10);
 					if (m_partInfo.end<1 || m_partInfo.end>m_beginInfo.size)
 					{
 						std::ostringstream oss;
@@ -152,13 +152,13 @@ namespace ByteFountain
 							<<" is not valid in =part with size="<<m_beginInfo.size;
 						m_callbacks.OnError(oss.str(),FAILED);
 						m_decodingState=ErrorState;
-						return;	
+						return;
 					}
 					if (m_partInfo.end<m_partInfo.begin)
 					{
 						m_callbacks.OnError("end is less than begin =part",FAILED);
 						m_decodingState=ErrorState;
-						return;	
+						return;
 					}
 					
 					m_callbacks.OnBeginSegment(m_beginInfo,m_partInfo);
@@ -178,14 +178,14 @@ namespace ByteFountain
 					const std::string line(msg,len);
 					const char* p;
 					p=findAttribute(line,"size=");
-					if (0==p) 
+					if (p==0) 
 					{
 						Flush();
 						m_callbacks.OnError("No size in =end",FAILED);
 						m_decodingState=ErrorState;
 						return;
 					}
-					m_endInfo.size = strtoull(p,0,10);
+					m_endInfo.size = strtoull(p,nullptr,10);
 					if (m_beginInfo.multipart)
 					{
 						if (m_bytesDecoded!=m_partInfo.end-m_partInfo.begin+1)
@@ -216,14 +216,14 @@ namespace ByteFountain
 					if (m_beginInfo.multipart)
 					{
 						p=findAttribute(line,"part=");
-						if (0==p) 
+						if (p==0) 
 						{
 							Flush();
 							m_callbacks.OnError("No part in =end",FAILED);
 							m_decodingState=ErrorState;
 							return;
 						}
-						m_endInfo.part = strtoul(p,0,10);
+						m_endInfo.part = strtoul(p,nullptr,10);
 						if (m_endInfo.part != m_beginInfo.part)
 						{
 							Flush();
@@ -234,14 +234,14 @@ namespace ByteFountain
 					}
 					p=findAttribute(line,"pcrc32=");
 					if (p==0) p=findAttribute(line,"crc32=");
-					if (0==p) 
+					if (p==0) 
 					{
 						Flush();
 						m_callbacks.OnError("No crc in =end",FAILED);
 						m_decodingState=ErrorState;
 						return;
 					}
-					m_endInfo.crc = strtoul(p,0,16);
+					m_endInfo.crc = strtoul(p,nullptr,16);
 					if (m_endInfo.crc != ((m_crcVal^0xFFFFFFFFl)&0xFFFFFFFFl))
 					{
 						m_callbacks.OnWarning("Crc mismatch",PART_CRC_MISMATCH);

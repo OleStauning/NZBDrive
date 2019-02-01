@@ -71,7 +71,7 @@ public:
 		virtual void OnEndSegment(const yEndInfo& endInfo)=0;
 		virtual void OnError(const std::string& msg, const Status& status)=0;
 		virtual void OnWarning(const std::string& msg, const Status& status)=0;
-		virtual ~Callbacks()=0;
+		virtual ~Callbacks();
 	};
 
 	yDecoder(Callbacks& callbacks);

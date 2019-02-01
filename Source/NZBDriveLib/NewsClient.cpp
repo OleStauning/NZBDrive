@@ -30,9 +30,10 @@ namespace ByteFountain
 	{
 		std::istream response_stream(&m_response);
 		response_stream >> status_code;
-		char space;
-		response_stream.get(space);
-		std::getline(response_stream, message);
+		char dummy;
+		response_stream.get(dummy);
+		std::getline(response_stream, message, '\r');
+		response_stream.get(dummy);
 
 		if (!response_stream)
 		{

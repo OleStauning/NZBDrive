@@ -241,13 +241,21 @@ void NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo, const yPart
 	m_state=NZBFile::MyDecoder::Begin;
 	m_file->SetFileInfo(m_idx,beginInfo,partInfo);
 
-	if (m_file->m_beginInfo->size != beginInfo.size)
+	if (m_file->m_beginInfo->name != beginInfo.name)
 	{
-		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo->name << "\"" << Logger::End;
+		m_file->m_log<<Logger::Error<<"=ybegin name mismatch when reading the parts of: " << 
+			m_file->m_beginInfo->name << " found another filename: " << beginInfo.name << Logger::End;
 		m_cached_segment.reset();
 		m_file->SetDownloadFailed(m_idx, FileErrorFlag::ErrorInSegment);
 	}
-	if (m_file->m_beginInfo->size < partInfo.end)
+	else if (m_file->m_beginInfo->size != beginInfo.size)
+	{
+		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: " << 
+			m_file->m_beginInfo->name << " "<< m_file->m_beginInfo->size << "!=" << beginInfo.size << Logger::End;
+		m_cached_segment.reset();
+		m_file->SetDownloadFailed(m_idx, FileErrorFlag::ErrorInSegment);
+	}
+	else if (m_file->m_beginInfo->size < partInfo.end)
 	{
 		m_file->m_log<<Logger::Error<<"=ybegin size parameter ("<<m_file->m_beginInfo->size<<") less than =ypart end parameter ("<<partInfo.end<<"): \"" << m_file->m_beginInfo->name << Logger::End;
 		m_cached_segment.reset();
@@ -270,7 +278,8 @@ void NZBFile::MyDecoder::OnBeginSegment(const yBeginInfo& beginInfo)
 
 	if (m_file->m_beginInfo->size != beginInfo.size)
 	{
-		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: \"" << m_file->m_beginInfo->name << "\"" << Logger::End;
+		m_file->m_log<<Logger::Error<<"=ybegin size parameter mismatch when reading the parts of: " << 
+			m_file->m_beginInfo->name << " " << m_file->m_beginInfo->size << "!=" << beginInfo.size << Logger::End;
 		m_cached_segment.reset();
 		m_file->SetDownloadFailed(m_idx, FileErrorFlag::ErrorInSegment);
 	}
@@ -293,7 +302,7 @@ void NZBFile::MyDecoder::OnData(const unsigned char* buf, const std::size_t size
 		if (m_offset + size > m_cached_segment->Size)
 		{
 			newsize = std::min(size, m_cached_segment->Size > m_offset ? m_cached_segment->Size-m_offset : (std::size_t)0);
-			m_file->m_log<<Logger::Error<<"Extra data found when decoding: \"" << m_file->m_beginInfo->name << "\"" << 
+			m_file->m_log<<Logger::Error<<"Extra data found when decoding: " << m_file->m_beginInfo->name << 
 			" ignoring " << size - newsize << " bytes" << Logger::End;
 		}
 		
@@ -316,7 +325,7 @@ void NZBFile::MyDecoder::OnError(const std::string& msg, const Status& status)
 {
 	m_state=NZBFile::MyDecoder::Error;
 	std::ostringstream errmsg;
-	errmsg<<"ErrorInSegment: "<<m_idx+1<<" : "<<msg;
+	errmsg<<"ErrorInSegment: "<<m_idx<<" : "<<msg;
 	m_file->m_log<<Logger::Error<<errmsg.str()<<Logger::End;
 	m_cached_segment.reset();
 	m_file->SetDownloadFailed(m_idx, FileErrorFlag::ErrorInSegment);
@@ -490,38 +499,18 @@ void NZBFile::UpdateVBegin()
 	static const double f=0.97;
 	unsigned long long begin=0;
 	
-	SegmentInfo* prev_info = nullptr;
-	
-	for(auto& info : m_segments)
+	for(auto& segment : m_segments)
 	{
-		if (info.ypart)
-		{
-			if (prev_info != nullptr)
-			{
-				if (prev_info->ypart)
-				{
-					if (prev_info->end_boundary != info.ypart->begin-1)
-					{
-						m_log<<Logger::Error<<"Segment boundary mismatch: "<<prev_info->end_boundary<<" != "<<info.ypart->begin-1<<Logger::End;
-					}
-				}
-				else
-				{
-					prev_info->end_boundary = info.ypart->begin-1;
-				}
-			}
-			
-			
-			info.end_boundary=info.ypart->end;
-			begin=info.ypart->end;
+		if (segment.ypart)
+		{			
+			segment.end_boundary = segment.ypart->end;
+			begin = segment.ypart->end;
 		}
 		else
 		{
-			begin+=(long)(f*info.msgBytes);
-			info.end_boundary=begin;
+			begin += (long)(f*segment.msgBytes);
+			segment.end_boundary = begin;
 		}
-		
-		prev_info = &info;
 	}
 	
 }
@@ -586,6 +575,8 @@ std::tuple<bool, std::size_t> NZBFile::TryGetData(std::unordered_set<std::size_t
 			if (seg_begin<last_end)
 			{
 				m_log<<Logger::Error<<"Segment address order mismatch: "<<seg_begin<<"<"<<last_end<<Logger::End;
+				err_occurred = true;
+				continue;
 			}
 			
 			auto seg_end = info.ypart->end;
@@ -685,10 +676,7 @@ bool NZBFile::GetFileData(char* buf, const unsigned long long offset, const std:
 	
 	std::unordered_set<std::size_t> done;
 	
-//	std::tuple<bool, std::size_t> trygetres;
-	
 	bool ok;
-	
 	while( std::tie(ok, readsize) = TryGetData(done,buf,offset,size,err), !ok && !err )
 	{
 		m_cond.wait(lock);
@@ -712,13 +700,11 @@ void NZBFile::_AsyncGetFileData(const OnDataFunction& function, char* buf, const
 		
 		std::unordered_set<std::size_t> done;
 		
-		std::tuple<bool, std::size_t> trygetres;
-		
+		bool ok;
 		if (size==0) ready=true;
 		else if (m_beginInfo && offset>=m_beginInfo->size) ready=true;
-		else if (std::get<0>(trygetres = TryGetData(done, buf, offset, size, err, cancel, priority)) || err)
+		else if (std::tie(ok, readsize) = TryGetData(done, buf, offset, size, err, cancel, priority), ok || err)
 		{
-			readsize = std::get<1>(trygetres);
 			ready = true;
 		}
 		
@@ -762,11 +748,10 @@ void NZBFile::ProcessAsyncDataRequests()
 
 			bool err=false;
 
-			auto trygetres = TryGetData(req.done, req.buf, req.offset, req.size, err, nullptr, req.priority);
+			auto [ ok, readsize ] = TryGetData(req.done, req.buf, req.offset, req.size, err, nullptr, req.priority);
 			
-			if (std::get<0>(trygetres) || err)
+			if (ok || err)
 			{
-				const auto readsize = std::get<1>(trygetres);
 				ready_list.emplace_back( std::make_tuple(req.func, readsize) );
 				i=m_data_requests.erase(i);
 			}

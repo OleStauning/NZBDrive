@@ -43,12 +43,12 @@ class NewsClientReadArticleStream : public NewsClientCommand
 
 
 	void GetArticleStream(NewsClient& client);
-	void HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len);
-	void HandleBodyRequestGROUPResponse(NewsClient& client, const error_code& err, const std::size_t len);
+	void HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid);
+	void HandleBodyRequestGROUPResponse(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid);
 	void HandleBodyRequestBODY(NewsClient& client, const error_code& err, const std::size_t len);
 	void HandleBodyRequestBODYResponse(NewsClient& client, 
 		const std::string& status_message_GROUP, const unsigned int status_code_GROUP,
-		const error_code& err, const std::size_t len);
+		const error_code& err, const std::size_t len, const std::string& msgid);
 	void HandleReadBodyStream(NewsClient& client, const error_code& err, const std::size_t len);
 	
 public:
