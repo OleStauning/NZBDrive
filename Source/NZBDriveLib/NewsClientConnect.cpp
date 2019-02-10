@@ -27,8 +27,6 @@ void NewsClientConnect::ErrorConnecting(NewsClient& client, const error_code& er
 {
 	const NewsServer& server(client.GetServer());
 
-	// TODO: CHANGE TO DEBUG IF COMMAND IS CANCELED:
-
 	if (m_canceled)
 	{
 		m_logger << Logger::Debug << "Connecting to " << server << " failed with " << err.message() << Logger::End;
