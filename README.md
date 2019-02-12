@@ -14,7 +14,7 @@ Mount NZB files as drives or folders in Linux or Windows (under construction!).
 * Extended WPF Toolkit (Windows)
 
 ## How to compile on Linux
-Install prerequisites and run `make` in the src-directory. This should generate an executable `nzbmounter`.
+Install prerequisites (make, g++-8, boost1.69, libssl-dev, tinyxml2, libfuse-dev, libcurlpp-dev, pkg-config) and run `make` in the src-directory. This should generate an executable `nzbmounter`.
 
 ## How to compile on Windows
 
