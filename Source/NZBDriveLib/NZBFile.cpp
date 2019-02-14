@@ -780,7 +780,7 @@ void NZBFile::AsyncGetFilename(OnFilenameFunction func, CancelSignal* cancel)
 		if (cancel!=0) conn=cancel->connect(std::bind(&NZBFile::CancelAsyncGetFilename,shared_from_this(),id));
 		m_filename_requests.emplace_back( id,func,conn );
 
-		Preload(/*TODO: Pre-check segments*/false,cancel);
+		m_io_service.post([this, cancel](){Preload(/*TODO: Pre-check segments*/false,cancel);});
 	}
 }
 

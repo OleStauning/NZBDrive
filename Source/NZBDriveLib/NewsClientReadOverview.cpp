@@ -285,15 +285,15 @@ void NewsClientReadOverview::HandleReadXOVERStream(NewsClient& client, const err
 				
 				m_handler->OnOverviewResponse(
 					OverviewResponse(
-						value,
-						strs[0],
-						strs[1],
-						strs[2],
-						strs[3],
-						strs[4],
-						strs[6],
-						strs[7],
-						strs[8]
+						value,//response
+						strs[0],//id
+						strs[1],//subject
+						strs[2],//from
+						strs[3],//date
+						strs[4],//messageID
+						strs[6],//bytes
+						strs[7],//lines
+						strs[8]//references
 					)
 				);
 			}
