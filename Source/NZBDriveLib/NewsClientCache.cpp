@@ -442,50 +442,53 @@ namespace ByteFountain
 
 	void NewsClientCache::ClientDone(const ClientPtr& myclient, const CommandPtr& mycommand, const NewsClient::DoneCode& code)
 	{
-		m_commandsRunning.erase(mycommand);
-
-		m_logger << Logger::Debug << *myclient << ": Command #" << mycommand->m_commandID << " ended (" << code << ")" << Logger::End;
-
-		if (code == NewsClient::DoneCode::DisconnectClient)
+		m_strand.dispatch([=]()
 		{
-			SendEvent(m_connectionStateChangedFunction, ConnectionState::Disconnected, myclient->server->serverID, myclient->clientID);
-			m_logger << Logger::Debug << *myclient << ": Disconnecting Client" << Logger::End;
+			m_commandsRunning.erase(mycommand);
 
-			StopClient(myclient);
-			myclient->Disconnect();
-		}
-		else if (code == NewsClient::DoneCode::Error)
-		{
-			SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
+			m_logger << Logger::Debug << *myclient << ": Command #" << mycommand->m_commandID << " ended (" << code << ")" << Logger::End;
 
-			mycommand->AddFailed(myclient);
-			m_commandsWaiting.emplace_front(mycommand);
-		}
-		else if (code == NewsClient::DoneCode::RetryOther)
-		{
-			SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
+			if (code == NewsClient::DoneCode::DisconnectClient)
+			{
+				SendEvent(m_connectionStateChangedFunction, ConnectionState::Disconnected, myclient->server->serverID, myclient->clientID);
+				m_logger << Logger::Debug << *myclient << ": Disconnecting Client" << Logger::End;
 
-			mycommand->AddFailed(myclient);
-			m_commandsWaiting.emplace_front(mycommand);
-		}
-		else if (code == NewsClient::DoneCode::ReconnectRetry || !myclient->IsConnected())
-		{
-			SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
+				StopClient(myclient);
+				myclient->Disconnect();
+			}
+			else if (code == NewsClient::DoneCode::Error)
+			{
+				SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
 
-			m_logger << Logger::Debug << *myclient << ": Reconnecting Client" << Logger::End;
+				mycommand->AddFailed(myclient);
+				m_commandsWaiting.emplace_front(mycommand);
+			}
+			else if (code == NewsClient::DoneCode::RetryOther)
+			{
+				SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
 
-			mycommand->AddTimeout(myclient);
-			m_commandsWaiting.emplace_front(mycommand);
+				mycommand->AddFailed(myclient);
+				m_commandsWaiting.emplace_front(mycommand);
+			}
+			else if (code == NewsClient::DoneCode::ReconnectRetry || !myclient->IsConnected())
+			{
+				SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
 
-			RestartClient(myclient);
-		}
-		else
-		{
-			SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
-		}
+				m_logger << Logger::Debug << *myclient << ": Reconnecting Client" << Logger::End;
+
+				mycommand->AddTimeout(myclient);
+				m_commandsWaiting.emplace_front(mycommand);
+
+				RestartClient(myclient);
+			}
+			else
+			{
+				SendEvent(m_connectionStateChangedFunction, ConnectionState::Idle, myclient->server->serverID, myclient->clientID);
+			}
 
 
-		DispatchCommands();
+			DispatchCommands();
+		});
 	}
 
 	NewsClientCache::NewsClientCache(io_service& ios, Logger& logger, RateLimiter& limiter) :

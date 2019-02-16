@@ -86,19 +86,21 @@ void NewsClientReadArticleStream::GetArticleStream(NewsClient& client)
 	auto msgid = "<"+m_msgIDs.back()+">";
 	
 	std::ostream request_stream(&m_request);
-	request_stream << "GROUP "<<group<<"\r\n";
+//	request_stream << "GROUP "<<group<<"\r\n";
 	request_stream << "BODY "<<msgid<<"\r\n";
 
 	client.AsyncWriteRequest(*this,
 		[&client, this, msgid](const error_code& err, const std::size_t len) mutable
 		{
-			HandleBodyRequestGROUP(client, err, len, msgid);
+//			HandleBodyRequestGROUP(client, err, len, msgid);
+			HandleBodyRequestGROUPResponse(client, err, len, msgid);
 		}
 	);
 }
 
 void NewsClientReadArticleStream::HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
 {
+
 	if (!err)
 	{
 		client.AsyncReadResponse(*this,
@@ -121,6 +123,7 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& cli
 		std::string status_message_GROUP;
 		unsigned int status_code_GROUP;
 
+		/*
 		if (!client.ReadStatusResponse(status_code_GROUP, status_message_GROUP))
 		{
 			m_logger << Logger::Warning<<"Invalid response"<<Logger::End;
@@ -129,13 +132,13 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& cli
 
 			return ClientReconnectRetry(client);
 		}
-
-		client.AsyncReadResponse(*this,
+*/
+		client.AsyncReadResponse(*this, 
 			[&client, this, status_message_GROUP, status_code_GROUP, msgid]
-		(const error_code& err, const std::size_t len) mutable
-			{
-				HandleBodyRequestBODYResponse(client, status_message_GROUP, status_code_GROUP, err, len, msgid);
-			}
+			(const error_code& err, const std::size_t len) mutable
+				{
+					HandleBodyRequestBODYResponse(client, status_message_GROUP, status_code_GROUP, err, len, msgid);
+				}
 		);
 		
 	}
@@ -160,13 +163,14 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 			m_logger << Logger::Warning<<"Invalid response"<<Logger::End;
 			return ClientReconnectRetry(client);
 		}
-		
+		/*
 		if (status_code_GROUP != 211)
 		{
 			if (status_code_GROUP == 411) // No such group
 			{
 				m_logger << Logger::Warning << "GROUP response returned with status: "
-					<< status_code_GROUP << " " << status_message_GROUP << Logger::End;
+					<< status_code_GROUP << " " << status_message_GROUP << 
+					" (" << m_groups.back() << ")" << Logger::End;
 
 				client.NoSuchGroupOnServer(m_groups.back());
 				
@@ -177,8 +181,8 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 				return ClientRetryOther(client);
 			}
 			else if (status_code_GROUP == 400 
-				|| status_code_GROUP == 503 /*time out*/ 
-				|| status_code_GROUP == 500 /*Max connect time exceeded */)
+				|| status_code_GROUP == 503 // time out
+				|| status_code_GROUP == 500 )// Max connect time exceeded 
 			{
 				m_logger << Logger::Warning << "GROUP response returned with status: "
 					<< status_code_GROUP << " " << status_message_GROUP << Logger::End;
@@ -192,7 +196,7 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 				<< status_code_GROUP << " " << status_message_GROUP << Logger::End;
 			return ClientReconnectRetry(client);
 		}
-
+*/
 		if (status_code_BODY != 222)
 		{
 			if (status_code_BODY == 430) // "no such article" or "DMCA Removed"
