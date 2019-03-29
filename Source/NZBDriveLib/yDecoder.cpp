@@ -131,6 +131,11 @@ namespace ByteFountain
 						return;
 					}
 					m_partInfo.begin = strtoull(p,nullptr,10);
+					if (m_partInfo.begin==0)
+					{
+						m_partInfo.begin=1;
+						m_callbacks.OnWarning("yPart=0 fixed",YPART_FIXED);
+					}
 					if (m_partInfo.begin<1 || m_partInfo.begin>m_beginInfo.size)
 					{
 						m_callbacks.OnError("begin is not valid in =part",FAILED);

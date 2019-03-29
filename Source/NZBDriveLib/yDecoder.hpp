@@ -32,7 +32,8 @@ public:
 		PART_MISMATCH = 4, /**< The part number in the trailer doesn't match the part number in the header */
 		SIZE_MISMATCH = 8, /**< The size of the data or the size value in the trailer doesn't match the size value in the header */
 		NAME_MISMATCH = 16, /**< The name value in the header doesn't match the name of the previous parts */
-		FAILED =  32/**< The decoding failed */
+		YPART_FIXED = 32, /**< yPart=0 fixed to yPart=1 */
+		FAILED =  64/**< The decoding failed */
 	};
 
 	struct yBeginInfo
