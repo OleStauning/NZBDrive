@@ -86,13 +86,11 @@ void NewsClientReadArticleStream::GetArticleStream(NewsClient& client)
 	auto msgid = "<"+m_msgIDs.back()+">";
 	
 	std::ostream request_stream(&m_request);
-//	request_stream << "GROUP "<<group<<"\r\n";
 	request_stream << "BODY "<<msgid<<"\r\n";
 
 	client.AsyncWriteRequest(*this,
 		[&client, this, msgid](const error_code& err, const std::size_t len) mutable
 		{
-//			HandleBodyRequestGROUP(client, err, len, msgid);
 			HandleBodyRequestGROUPResponse(client, err, len, msgid);
 		}
 	);
@@ -123,16 +121,6 @@ void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& cli
 		std::string status_message_GROUP;
 		unsigned int status_code_GROUP;
 
-		/*
-		if (!client.ReadStatusResponse(status_code_GROUP, status_message_GROUP))
-		{
-			m_logger << Logger::Warning<<"Invalid response"<<Logger::End;
-
-			client.IncrementErrorCount();
-
-			return ClientReconnectRetry(client);
-		}
-*/
 		client.AsyncReadResponse(*this, 
 			[&client, this, status_message_GROUP, status_code_GROUP, msgid]
 			(const error_code& err, const std::size_t len) mutable
@@ -163,52 +151,16 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 			m_logger << Logger::Warning<<"Invalid response"<<Logger::End;
 			return ClientReconnectRetry(client);
 		}
-		/*
-		if (status_code_GROUP != 211)
-		{
-			if (status_code_GROUP == 411) // No such group
-			{
-				m_logger << Logger::Warning << "GROUP response returned with status: "
-					<< status_code_GROUP << " " << status_message_GROUP << 
-					" (" << m_groups.back() << ")" << Logger::End;
-
-				client.NoSuchGroupOnServer(m_groups.back());
-				
-				m_groups.pop_back();
-				
-				if (!m_groups.empty()) return GetArticleStream(client);
-				
-				return ClientRetryOther(client);
-			}
-			else if (status_code_GROUP == 400 
-				|| status_code_GROUP == 503 // time out
-				|| status_code_GROUP == 500 )// Max connect time exceeded 
-			{
-				m_logger << Logger::Warning << "GROUP response returned with status: "
-					<< status_code_GROUP << " " << status_message_GROUP << Logger::End;
-					
-				client.IncrementConnectionTimeoutCount();
-
-				return ClientReconnectRetry(client);
-			}
-
-			m_logger << Logger::Error << "GROUP response returned with status: "
-				<< status_code_GROUP << " " << status_message_GROUP << Logger::End;
-			return ClientReconnectRetry(client);
-		}
-*/
 		if (status_code_BODY != 222)
 		{
 			if (status_code_BODY == 430) // "no such article" or "DMCA Removed"
 			{
-				m_logger<<Logger::Warning<<"Article response returned with status: "
+				m_logger<<Logger::Warning<<"Article <"<<msgid<<"> response returned with status: "
 					<< status_code_BODY << " " << status_message_BODY << Logger::End;
 
 				client.IncrementMissingSegmentCount();
 				
 				m_msgIDs.pop_back();
-
-// TODO: CRASH HERE?!?!?!
 
 				if (!m_msgIDs.empty()) return GetArticleStream(client);
 					
@@ -218,14 +170,14 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 				|| status_code_BODY == 503 /*time out*/ 
 				|| status_code_BODY == 500 /*Max connect time exceeded */)
 			{
-				m_logger<<Logger::Warning<<"Article response returned with status: "
+				m_logger<<Logger::Warning<<"Article <"<<msgid<<"> response returned with status: "
 					<< status_code_BODY << " " << status_message_BODY << Logger::End;
 
 				client.IncrementConnectionTimeoutCount();
 
 				return ClientReconnectRetry(client);
 			}
-			m_logger<<Logger::Error<<"article response returned with status: "
+			m_logger<<Logger::Error<<"Article <"<<msgid<<"> response returned with status: "
 				<< status_code_BODY << " " << status_message_BODY << Logger::End;
 			return ClientReconnectRetry(client);
 		}
@@ -253,8 +205,6 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 
 void NewsClientReadArticleStream::HandleReadBodyStream(NewsClient& client, const error_code& err, const std::size_t size)
 {
-//		m_timer.cancel();
-	
 	if (!err)
 	{
 		const char* msgBegin=client.Data();
