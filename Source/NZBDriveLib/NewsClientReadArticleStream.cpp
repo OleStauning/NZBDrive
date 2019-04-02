@@ -91,30 +91,13 @@ void NewsClientReadArticleStream::GetArticleStream(NewsClient& client)
 	client.AsyncWriteRequest(*this,
 		[&client, this, msgid](const error_code& err, const std::size_t len) mutable
 		{
-			HandleBodyRequestGROUPResponse(client, err, len, msgid);
+			HandleBodyResponse(client, err, len, msgid);
 		}
 	);
 }
 
-void NewsClientReadArticleStream::HandleBodyRequestGROUP(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
-{
 
-	if (!err)
-	{
-		client.AsyncReadResponse(*this,
-			[&client, this, msgid](const error_code& err, const std::size_t len) mutable
-			{
-				HandleBodyRequestGROUPResponse(client, err, len, msgid);
-			}
-		);
-	}
-	else
-	{
-		HandleError(client,err,len);
-	}
-}
-
-void NewsClientReadArticleStream::HandleBodyRequestGROUPResponse(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
+void NewsClientReadArticleStream::HandleBodyResponse(NewsClient& client, const error_code& err, const std::size_t len, const std::string& msgid)
 {
 	if (!err)
 	{
@@ -155,29 +138,34 @@ void NewsClientReadArticleStream::HandleBodyRequestBODYResponse(NewsClient& clie
 		{
 			if (status_code_BODY == 430) // "no such article" or "DMCA Removed"
 			{
-				m_logger<<Logger::Warning<<"Article <"<<msgid<<"> response returned with status: "
+				m_logger<<Logger::Warning<<"Article "<<msgid<<" response returned with status: "
 					<< status_code_BODY << " " << status_message_BODY << Logger::End;
 
 				client.IncrementMissingSegmentCount();
 				
 				m_msgIDs.pop_back();
-
-				if (!m_msgIDs.empty()) return GetArticleStream(client);
-					
+/*
+ * BROKEN PIPELINE:
+				if (!m_msgIDs.empty())
+				{
+					m_logger << Logger::Warning << "Retrying with redundant message" << Logger::End;
+					return GetArticleStream(client);
+				}
+*/					
 				return ClientRetryOther(client);
 			}
 			else if (status_code_BODY == 400 
 				|| status_code_BODY == 503 /*time out*/ 
 				|| status_code_BODY == 500 /*Max connect time exceeded */)
 			{
-				m_logger<<Logger::Warning<<"Article <"<<msgid<<"> response returned with status: "
+				m_logger<<Logger::Warning<<"Article "<<msgid<<" response returned with status: "
 					<< status_code_BODY << " " << status_message_BODY << Logger::End;
 
 				client.IncrementConnectionTimeoutCount();
 
 				return ClientReconnectRetry(client);
 			}
-			m_logger<<Logger::Error<<"Article <"<<msgid<<"> response returned with status: "
+			m_logger<<Logger::Error<<"Article "<<msgid<<" response returned with status: "
 				<< status_code_BODY << " " << status_message_BODY << Logger::End;
 			return ClientReconnectRetry(client);
 		}
