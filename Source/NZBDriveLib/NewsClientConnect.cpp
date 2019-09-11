@@ -34,6 +34,15 @@ void NewsClientConnect::ErrorConnecting(NewsClient& client, const error_code& er
 	else
 	{
 		m_logger << Logger::Error << "Connecting to " << server << " failed with " << err.message() << Logger::End;
+
+#ifdef _MSC_VER
+		if (err.value()==WSAETIMEDOUT)
+#else
+		if (err.value()==ETIMEDOUT)
+#endif
+		{
+			return ClientReconnectRetry(client);
+		}
 	}
 
 	return ClientDisconnect(client);
