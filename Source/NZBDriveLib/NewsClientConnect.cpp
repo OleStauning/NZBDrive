@@ -7,6 +7,8 @@
 */
 
 #include "NewsClientConnect.hpp"
+#include <boost/asio/error.hpp>
+
 
 namespace ByteFountain
 {
@@ -35,11 +37,7 @@ void NewsClientConnect::ErrorConnecting(NewsClient& client, const error_code& er
 	{
 		m_logger << Logger::Error << "Connecting to " << server << " failed with " << err.message() << Logger::End;
 
-#ifdef _MSC_VER
-		if (err.value()==WSAETIMEDOUT)
-#else
-		if (err.value()==ETIMEDOUT)
-#endif
+		if (err.value()==boost::asio::error::host_not_found_try_again || err.value()==boost::asio::error::timed_out)
 		{
 			return ClientReconnectRetry(client);
 		}
