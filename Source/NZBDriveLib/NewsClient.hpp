@@ -16,7 +16,7 @@
 #include <queue>
 #include <signal.h>
 
-#define ASIOMaxBufferSize 4096
+//#define ASIOMaxBufferSize 4096
 
 
 namespace ByteFountain
@@ -84,7 +84,7 @@ public:
 		m_server(server),
 		m_socket(ios, server.SSL, limiter),
 		m_done(done),
-		m_response(ASIOMaxBufferSize),
+		m_response(/*ASIOMaxBufferSize*/),
 		m_pipeline(),
 		m_active(0),
 		m_timer(ios),

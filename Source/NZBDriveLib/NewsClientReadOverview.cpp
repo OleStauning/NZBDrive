@@ -220,8 +220,6 @@ void NewsClientReadOverview::HandleRequestXOVERResponse(NewsClient& client, cons
 		std::string status_message;
 		unsigned int status_code;
 
-		m_logger << Logger::Debug<<status_message<<Logger::End;
-		
 		
 		if (!client.ReadStatusResponse(status_code, status_message))
 		{
@@ -229,6 +227,8 @@ void NewsClientReadOverview::HandleRequestXOVERResponse(NewsClient& client, cons
 			return ClientReconnectRetry(client);
 		}
 				
+		m_logger << Logger::Debug<< "Status message: " <<status_message << Logger::End;
+		
 		client.AsyncReadDataResponse(*this,
 			[&client, this](const error_code& err, const std::size_t len) mutable
 			{
@@ -252,6 +252,7 @@ void NewsClientReadOverview::HandleReadXOVERStream(NewsClient& client, const err
 		
 		if (size>0)
 		{
+	
 			if (*msgBegin=='.' && size==3)
 			{
 				client.Consume(3);
@@ -266,6 +267,7 @@ void NewsClientReadOverview::HandleReadXOVERStream(NewsClient& client, const err
 			}
 			else
 			{
+	
 				std::string value(msgBegin, size);
 				boost::trim_right_if(value,boost::is_any_of("\r\n"));
 				std::vector<std::string> strs;
@@ -310,6 +312,7 @@ void NewsClientReadOverview::HandleReadXOVERStream(NewsClient& client, const err
 	}
 	else
 	{
+		m_logger << Logger::Error<< "HandleReadXOVERStream: XOVER FAILED" << Logger::End;
 		HandleError(client,err,size-2);
 	}
 }

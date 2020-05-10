@@ -13,7 +13,7 @@ namespace ByteFountain
 {
 	
 NewsClientCommand::NewsClientCommand(io_service& ios, Logger& logger):
-m_logger(logger)/*, m_timer(ios)*/, m_request(ASIOMaxBufferSize), m_canceled(false)
+m_logger(logger)/*, m_timer(ios)*/, m_request(/*ASIOMaxBufferSize*/), m_canceled(false)
 {
 }
 
