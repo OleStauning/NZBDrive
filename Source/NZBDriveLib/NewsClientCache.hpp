@@ -14,6 +14,7 @@
 #include "NewsClientCommand.hpp"
 #include "IArticleStreamHandler.hpp"
 #include "IOverviewResponseHandler.hpp"
+#include "IListActiveHandler.hpp"
 #include "ConnectionState.hpp"
 #include <boost/signals2.hpp>
 #include <boost/asio.hpp>
@@ -134,6 +135,7 @@ public:
 	void GetOverviewStream(const std::string& group, const unsigned long long fromID, const unsigned long long toID, 
 			      std::shared_ptr<IOverviewResponseHandler> handler);
 	void GetOverviewStream(const std::string& group, std::shared_ptr<IOverviewResponseHandler> handler);
+	void ListActive(const std::string& wildmat, std::shared_ptr<IListActiveHandler> handler);
 };
 
 

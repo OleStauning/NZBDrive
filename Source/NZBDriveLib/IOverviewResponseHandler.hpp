@@ -9,7 +9,7 @@
 #ifndef IOVERVIEWRESPONSEHANDLER_HPP
 #define IOVERVIEWRESPONSEHANDLER_HPP
 
-#include <functional>
+#include <string>
 
 namespace ByteFountain
 {
@@ -51,37 +51,17 @@ namespace ByteFountain
 	};
 	
 	
-struct IOverviewResponseHandler
-{
-	virtual ~IOverviewResponseHandler(){}
-	virtual void OnErrorRetry() = 0;
-	virtual void OnCancel() = 0;
-	virtual void OnErrorCancel() = 0;
-	virtual void OnGroupResponse(const bool groupExists, const unsigned long long size, 
-		const unsigned long long low, const unsigned long long high) = 0;
-	virtual void OnOverviewResponse(const OverviewResponse& line) = 0;
-	virtual void OnEnd(const bool EOM) = 0;
-};
-
-struct OverviewResponseHandlerWrapper : IOverviewResponseHandler
-{
-	IOverviewResponseHandler& m_handler;
-	
-	OverviewResponseHandlerWrapper(IOverviewResponseHandler& handler):m_handler(handler){}
-	
-	void OnErrorRetry(){ m_handler.OnErrorRetry(); }
-	void OnCancel(){ m_handler.OnCancel(); }
-	void OnErrorCancel(){ m_handler.OnErrorCancel(); }
-	void OnGroupResponse(const bool groupExists, const unsigned long long size, 
-		const unsigned long long low, const unsigned long long high)
+	struct IOverviewResponseHandler
 	{
-		m_handler.OnGroupResponse(groupExists,size,low,high);
-	}
-	void OnOverviewResponse(const OverviewResponse& line){ m_handler.OnOverviewResponse(line); }
-	void OnEnd(const bool EOM){ m_handler.OnEnd(EOM); }
-};
-
-
+		virtual ~IOverviewResponseHandler(){}
+		virtual void OnErrorRetry() = 0;
+		virtual void OnCancel() = 0;
+		virtual void OnErrorCancel() = 0;
+		virtual void OnGroupResponse(const bool groupExists, const unsigned long long size, 
+			const unsigned long long low, const unsigned long long high) = 0;
+		virtual void OnOverviewResponse(const OverviewResponse& line) = 0;
+		virtual void OnEnd(const bool EOM) = 0;
+	};
 }
 
 #endif

@@ -11,6 +11,7 @@
 #include "NewsClientReadArticleStream.hpp"
 #include "NewsClientStatArticle.hpp"
 #include "NewsClientReadOverview.hpp"
+#include "NewsClientListActive.hpp"
 
 namespace ByteFountain
 {
@@ -712,6 +713,13 @@ namespace ByteFountain
 		);
 	}
 
+	
+	void NewsClientCache::ListActive(const std::string& wildmat, std::shared_ptr<IListActiveHandler> handler)
+	{
+		PostCommand( new MyCommandT<NewsClientListActive>
+			(++m_commandCounter, nullptr, m_priorityCommands, true, m_ios, m_logger, wildmat, handler)
+		);		
+	}
 
 }
 
