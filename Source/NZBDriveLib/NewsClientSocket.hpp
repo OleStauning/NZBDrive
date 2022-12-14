@@ -20,6 +20,7 @@
 namespace ByteFountain
 {
 
+typedef boost::asio::io_context io_context;
 typedef boost::asio::io_service io_service;
 typedef boost::asio::ssl::context ssl_context;
 typedef boost::asio::ip::tcp::socket unsecure_socket;
@@ -144,6 +145,9 @@ class NewsClientSocket : public RateLimiterTarget
 	unsecure_socket m_tcp_socket;
 
 public:
+
+	typedef typename io_context::executor_type executor_type;
+
 	NewsClientSocket(io_service& ios,  const bool ssl, RateLimiter& limiter):
 		RateLimiterTarget(ios,limiter),
 		m_io_service(ios),

@@ -1,4 +1,4 @@
-CC=g++-8 -O3 -std=c++17
+CC=g++-9 -O3 -std=c++17
 OBJ = NZBMounter.o
 
 
